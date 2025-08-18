@@ -12,7 +12,7 @@ Seu projeto está configurado para usar **OpenRouter**, que oferece acesso a mú
 
 ## 🔑 Sua Configuração
 
-**API Key**: `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`
+**API Key**: `${OPENAI_API_KEY}` (configure como variável de ambiente)
 **Base URL**: `https://openrouter.ai/api/v1`
 
 ## 🎨 Modelos Disponíveis

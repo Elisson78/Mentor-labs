@@ -37,14 +37,15 @@ Clique em "Environment Variables" e adicione:
 
 ```bash
 NODE_ENV=production
-DATABASE_URL=postgresql://db_mentorlabs:Hqh0ekgAUhU6XnPlFupo8yididHgLqzSTnnnyc49iUuEpQ8vTcDWl7w6pZ31IAFx@mentoriabs:5432/postgres
-NEXTAUTH_SECRET=sua-super-chave-secreta-aqui-123456789
-NEXTAUTH_URL=https://mentoriabs.com
-OPENAI_API_KEY=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
-OPENAI_BASE_URL=https://openrouter.ai/api/v1
-NEXT_PUBLIC_API_URL=https://api.mentoriabs.com
-NEXT_PUBLIC_WEB_URL=https://mentoriabs.com
-WEBHOOK_SECRET=055f49c7632040a1f3ce05d640037e9b196f1147
+# DATABASE_URL exemplo: postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>:5432/<DB_NAME>
+DATABASE_URL=${DATABASE_URL}
+NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+NEXTAUTH_URL=${NEXTAUTH_URL}
+OPENAI_API_KEY=${OPENAI_API_KEY}
+OPENAI_BASE_URL=${OPENAI_BASE_URL}
+NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+NEXT_PUBLIC_WEB_URL=${NEXT_PUBLIC_WEB_URL}
+WEBHOOK_SECRET=${WEBHOOK_SECRET}
 ```
 
 ## 🔧 **Advanced Settings**

@@ -45,20 +45,20 @@ Seu projeto já foi preparado com:
 Configure estas variáveis essenciais no Coolify:
 
 ```bash
-# Database
-DATABASE_URL=postgresql://postgres:senha_forte_aqui@postgres:5432/teste_db
+# Database (exemplo)
+DATABASE_URL=${DATABASE_URL}
 
 # Authentication
-NEXTAUTH_SECRET=sua-chave-super-secreta-aqui-mude-em-producao
-NEXTAUTH_URL=https://seu-dominio.com
+NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+NEXTAUTH_URL=${NEXTAUTH_URL}
 
 # OpenRouter API (acesso a múltiplos modelos)
-OPENAI_API_KEY=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
-OPENAI_BASE_URL=https://openrouter.ai/api/v1
+OPENAI_API_KEY=${OPENAI_API_KEY}
+OPENAI_BASE_URL=${OPENAI_BASE_URL}
 
 # URLs da aplicação
-NEXT_PUBLIC_API_URL=https://api.seu-dominio.com
-NEXT_PUBLIC_WEB_URL=https://seu-dominio.com
+NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+NEXT_PUBLIC_WEB_URL=${NEXT_PUBLIC_WEB_URL}
 
 # Produção
 NODE_ENV=production

@@ -22,6 +22,8 @@ First, install the dependencies:
 ```bash
 npm install
 ```
+ 
+Note: Before deploying, create a `.env` file or configure environment variables in your deployment platform (Coolify) using `.env.example`.
 ## Database Setup
 
 This project uses SQLite with Drizzle ORM.

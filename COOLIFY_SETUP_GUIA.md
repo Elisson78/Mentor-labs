@@ -30,20 +30,18 @@ No Coolify, adicione estas variáveis na seção **Environment Variables**:
 
 ```bash
 NODE_ENV=production
-DATABASE_URL=postgresql://db_mentorlabs:Hqh0ekgAUhU6XnPlFupo8yididHgLqzSTnnnyc49iUuEpQ8vTcDWl7w6pZ31IAFx@mentoriabs:5432/postgres
-NEXTAUTH_SECRET=sua-chave-super-secreta-mude-em-producao-123456789
-NEXTAUTH_URL=https://seu-dominio.com
-OPENAI_API_KEY=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
-OPENAI_BASE_URL=https://openrouter.ai/api/v1
-NEXT_PUBLIC_API_URL=https://api.seu-dominio.com
-NEXT_PUBLIC_WEB_URL=https://seu-dominio.com
-WEBHOOK_SECRET=ff0bf2616b1454e99af428823b442b95db237ca60fbde63ab7b51e5d97dd4d50
+# DATABASE_URL exemplo: postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>:5432/<DB_NAME>
+DATABASE_URL=${DATABASE_URL}
+NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+NEXTAUTH_URL=${NEXTAUTH_URL}
+OPENAI_API_KEY=${OPENAI_API_KEY}
+OPENAI_BASE_URL=${OPENAI_BASE_URL}
+NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+NEXT_PUBLIC_WEB_URL=${NEXT_PUBLIC_WEB_URL}
+WEBHOOK_SECRET=${WEBHOOK_SECRET}
 ```
 
-**✅ Banco PostgreSQL**: Usando o banco existente `mentoriabs` do seu Coolify
-- **Username**: `db_mentorlabs`  
-- **Password**: `Hqh0ekgAUhU6XnPlFupo8yididHgLqzSTnnnyc49iUuEpQ8vTcDWl7w6pZ31IAFx`
-- **Database**: `postgres`
+**✅ Banco PostgreSQL**: Configure o banco no Coolify e use as credenciais fornecidas pelo serviço. Não comite senhas no repositório.
 
 ### 4. **Configurar Domínios**
 

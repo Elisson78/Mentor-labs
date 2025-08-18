@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: teste_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password123
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password123}
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
@@ -28,11 +28,11 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:password123@postgres:5432/teste_db
-      - NEXTAUTH_SECRET=your-super-secret-key-here
-      - NEXTAUTH_URL=http://localhost:3000
-      - OPENAI_API_KEY=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
-      - OPENAI_BASE_URL=https://openrouter.ai/api/v1
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL}
     ports:
       - "3000:3000"
     depends_on:
