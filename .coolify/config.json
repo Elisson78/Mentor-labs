@@ -1,0 +1,46 @@
+{
+  "name": "plataforma-educacional",
+  "description": "Plataforma educacional com IA para análise de vídeos e geração de quizzes",
+  "environment": "production",
+  "build_pack": "docker-compose",
+  "docker_compose_file": "./docker-compose.yml",
+  "webhook_secret": "055f49c7632040a1f3ce05d640037e9b196f1147",
+  "auto_deploy": {
+    "enabled": true,
+    "branch": "main"
+  },
+  "domains": [
+    {
+      "host": "seu-dominio.com",
+      "port": 3001,
+      "service": "web"
+    },
+    {
+      "host": "api.seu-dominio.com", 
+      "port": 3000,
+      "service": "server"
+    }
+  ],
+  "environment_variables": {
+    "NODE_ENV": "production",
+    "DATABASE_URL": "postgresql://postgres:senha_forte_aqui@postgres:5432/teste_db",
+    "NEXTAUTH_SECRET": "sua-chave-super-secreta-mude-em-producao",
+    "NEXTAUTH_URL": "https://seu-dominio.com",
+    "OPENAI_API_KEY": "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",
+    "OPENAI_BASE_URL": "https://openrouter.ai/api/v1",
+    "NEXT_PUBLIC_API_URL": "https://api.seu-dominio.com",
+    "NEXT_PUBLIC_WEB_URL": "https://seu-dominio.com"
+  },
+  "health_checks": [
+    {
+      "url": "https://api.seu-dominio.com/health",
+      "interval": 30,
+      "timeout": 10
+    },
+    {
+      "url": "https://seu-dominio.com",
+      "interval": 30,
+      "timeout": 10
+    }
+  ]
+}

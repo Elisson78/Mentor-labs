@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-
+// Root route intentionally returns no content to avoid showing JSON in the browser
 export async function GET() {
-  return NextResponse.json({ message: "OK" });
+  return new Response(null, { status: 204 });
 }

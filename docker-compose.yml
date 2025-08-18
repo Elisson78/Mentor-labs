@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: teste-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: teste_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - teste-network
+
+  # Server (Backend API)
+  server:
+    build:
+      context: ./apps/server
+      dockerfile: Dockerfile
+    container_name: teste-server
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:password123@postgres:5432/teste_db
+      - NEXTAUTH_SECRET=your-super-secret-key-here
+      - NEXTAUTH_URL=http://localhost:3000
+      - OPENAI_API_KEY=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
+      - OPENAI_BASE_URL=https://openrouter.ai/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    networks:
+      - teste-network
+    volumes:
+      - ./apps/server:/app
+      - /app/node_modules
+      - /app/.next
+
+  # Web (Frontend)
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: teste-web
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+    ports:
+      - "3001:3000"
+    depends_on:
+      - server
+    networks:
+      - teste-network
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+      - /app/.next
+
+  # Nginx Reverse Proxy (Optional)
+  nginx:
+    image: nginx:alpine
+    container_name: teste-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - web
+      - server
+    networks:
+      - teste-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  teste-network:
+    driver: bridge

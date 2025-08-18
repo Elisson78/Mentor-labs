@@ -18,6 +18,7 @@ export default function Providers({
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange
+      suppressHydrationWarning
     >
       <QueryClientProvider client={queryClient}>
         {children}
