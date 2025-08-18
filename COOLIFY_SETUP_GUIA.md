@@ -2,8 +2,8 @@
 
 ## 📋 Informações do seu GitHub App
 
-✅ **GitHub App configurado**: `mentor-labs`  
-✅ **Webhook Secret**: `055f49c7632040a1f3ce05d640037e9b196f1147`  
+✅ **GitHub App configurado**: `mentor-lab-coolify`  
+✅ **Webhook Secret**: `ff0bf2616b1454e99af428823b442b95db237ca60fbde63ab7b51e5d97dd4d50`  
 ✅ **Servidor Coolify**: http://91.107.237.159:8000  
 
 ## 🎯 Próximos Passos
@@ -18,7 +18,7 @@
 ### 2. **Configurar Source (GitHub)**
 
 1. **Source Type**: GitHub App
-2. **GitHub App**: Selecione `mentor-labs` 
+2. **GitHub App**: Selecione `mentor-lab-coolify` 
 3. **Repository**: Escolha seu repositório onde está o código
 4. **Branch**: `main` (ou sua branch principal)
 5. **Build Pack**: Docker Compose
@@ -37,7 +37,7 @@ OPENAI_API_KEY=sk-or-v1-3a75cdcba139aa046c5202f2717ad2f3ccfbc95047fc3a09a7bdbd0c
 OPENAI_BASE_URL=https://openrouter.ai/api/v1
 NEXT_PUBLIC_API_URL=https://api.seu-dominio.com
 NEXT_PUBLIC_WEB_URL=https://seu-dominio.com
-WEBHOOK_SECRET=055f49c7632040a1f3ce05d640037e9b196f1147
+WEBHOOK_SECRET=ff0bf2616b1454e99af428823b442b95db237ca60fbde63ab7b51e5d97dd4d50
 ```
 
 **✅ Banco PostgreSQL**: Usando o banco existente `mentoriabs` do seu Coolify
