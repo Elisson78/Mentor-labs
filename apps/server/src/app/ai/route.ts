@@ -1,4 +1,4 @@
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI } from '@ai-sdk/openai';
 import { streamText } from 'ai';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -160,11 +160,13 @@ IMPORTANTE: Retorne APENAS o JSON, sem explicações adicionais.`;
       try {
         console.log(`Tentando modelo: ${model}`);
         
+        const openaiClient = createOpenAI({
+          baseURL: 'https://openrouter.ai/api/v1',
+          apiKey: apiKey,
+        });
+        
         const result = await streamText({
-          model: openai(model, {
-            baseURL: 'https://openrouter.ai/api/v1',
-            apiKey: apiKey,
-          }),
+          model: openaiClient(model),
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: enhancedPrompt }
@@ -333,11 +335,13 @@ async function handleChat(request: ChatRequest) {
     return NextResponse.json({ error: 'OpenRouter API key not configured' }, { status: 500 });
   }
 
+  const openaiClient = createOpenAI({
+    baseURL: 'https://openrouter.ai/api/v1',
+    apiKey: apiKey,
+  });
+  
   const result = await streamText({
-    model: openai('gpt-3.5-turbo', {
-      baseURL: 'https://openrouter.ai/api/v1',
-      apiKey: apiKey,
-    }),
+    model: openaiClient('gpt-3.5-turbo'),
     messages,
   });
 
