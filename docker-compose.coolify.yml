@@ -10,12 +10,13 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:CSQ0OC3A0KQAwdfuxdBwKuOeZHcBZAeI@138.201.152.160:5432/postgres}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_BASE_URL=${OPENAI_BASE_URL}
-      - WEBHOOK_SECRET=${WEBHOOK_SECRET:-ff0bf2616b1454e99af428823b442b95db237ca60fbde63ab7b51e5d97dd4d50}
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET:-22e830e6941533e5b0edeacb9e4f27c5ae96}
     ports:
       - "3000:3000"
     networks:
@@ -38,6 +39,8 @@ services:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NEXT_PUBLIC_WEB_URL=${NEXT_PUBLIC_WEB_URL}
+      - NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
     ports:
       - "3001:3000"
     depends_on:
