@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleVideoAnalysis(request: VideoAnalysisRequest) {
-  const { videoUrl, subject, difficultyLevel, numberOfQuestions } = request;
+  const { videoUrl, difficultyLevel, numberOfQuestions } = request;
 
   if (!videoUrl) {
     return NextResponse.json({ error: 'Video URL is required' }, { status: 400 });
@@ -171,7 +171,7 @@ IMPORTANTE: Retorne APENAS o JSON, sem explicações adicionais.`;
             { role: 'system', content: systemPrompt },
             { role: 'user', content: enhancedPrompt }
           ],
-          maxTokens: 2000,
+          maxRetries: 2,
           temperature: 0.7,
         });
 
@@ -243,7 +243,17 @@ IMPORTANTE: Retorne APENAS o JSON, sem explicações adicionais.`;
       detectedSubject = 'Culinária';
     }
     
-    const fallbackResponse = {
+    const fallbackResponse: {
+      videoContext: string;
+      detectedSubject: string;
+      questions: Array<{
+        question: string;
+        options: string[];
+        correctAnswer: number;
+        explanation: string;
+        difficulty: string;
+      }>;
+    } = {
       "videoContext": `${contextDescription}. Assunto identificado como ${detectedSubject} baseado na análise do URL.`,
       "detectedSubject": detectedSubject,
       "questions": []
@@ -310,7 +320,7 @@ IMPORTANTE: Retorne APENAS o JSON, sem explicações adicionais.`;
       }
     ];
 
-    const subjectQuestions = questionsBank[detectedSubject] || defaultQuestions;
+    const subjectQuestions = questionsBank[detectedSubject as keyof typeof questionsBank] || defaultQuestions;
     
     for (let i = 0; i < numberOfQuestions; i++) {
       const questionIndex = i % subjectQuestions.length;
