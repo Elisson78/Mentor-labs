@@ -167,7 +167,7 @@ async function generateQuestionsWithAI(
           content: prompt
         }
       ],
-      maxTokens: 2000,
+      maxRetries: 2,
       temperature: 0.7
     });
 
