@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: nentor-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nentor_labs_prod
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password_2024}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    networks:
+      - nentor-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Server (Backend API)
+  server:
+    build:
+      context: ./apps/server
+      dockerfile: Dockerfile
+    container_name: nentor-server-prod
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-secure_password_2024}@postgres:5432/nentor_labs_prod
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-your_nextauth_secret_here}
+      - NEXTAUTH_URL=http://138.201.152.160:3001
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
+      - CORS_ORIGIN=http://138.201.152.160:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nentor-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Web (Frontend)
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: nentor-web-prod
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_SERVER_URL=http://138.201.152.160:3000
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    ports:
+      - "3001:3000"
+    depends_on:
+      server:
+        condition: service_healthy
+    networks:
+      - nentor-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Reverse Proxy (Opcional)
+  nginx:
+    image: nginx:alpine
+    container_name: nentor-nginx-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - web
+      - server
+    networks:
+      - nentor-network
+    profiles:
+      - nginx
+
+  # Redis Cache (Opcional)
+  redis:
+    image: redis:7-alpine
+    container_name: nentor-redis-prod
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - nentor-network
+    profiles:
+      - cache
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  nentor-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

@@ -110,6 +110,38 @@ nentor-labs/
 - **Nginx reverse proxy** configurado ✅
 - **Coolify deploy** documentado ✅
 
+## 🖥️ Servidor de Produção - Hetzner
+
+### Especificações do Servidor:
+- **Provider**: Hetzner Cloud
+- **Servidor**: CPX41 (coolify-ubuntu-16gb-fsn1-1)
+- **IP Público**: 138.201.152.160
+- **Sistema Operacional**: Ubuntu Linux
+- **Localização**: Falkenstein, Alemanha (fsn1)
+- **Status**: 🟢 Online
+
+### Recursos Disponíveis:
+- **vCPU**: 8 cores (Shared vCPU - x86 Intel/AMD)
+- **RAM**: 16 GB
+- **Armazenamento**: 240 GB SSD Local
+- **Tráfego**: 20 TB/mês incluído
+- **Preço**: €24.70/mês
+
+### Configurações de Rede:
+- **IPv4**: 138.201.152.160
+- **Versão IPv6**: 10.0.0.2
+- **Floating IP**: Disponível para adicionar
+- **Placement Group**: placement-group-1
+- **Rede Pública**: Habilitada
+
+### Características do Servidor:
+- **Arquitetura**: x86 (Intel/AMD)
+- **Tipo**: Shared vCPU (Ideal para websites e aplicações de tráfego médio)
+- **Uso recomendado**: Medium traffic websites & applications
+- **CPU Usage**: Low to medium CPU usage
+- **Backup**: Habilitado
+- **Datacenter**: Falkenstein (fsn1)
+
 ## 📝 Comandos Disponíveis
 
 ### Desenvolvimento:
@@ -161,14 +193,35 @@ npm run check-types  # Verificar tipos
 - **TailwindCSS 4.x** - Performance otimizada
 - **Node.js 22.x** - LTS recomendado
 
+## 🚀 Deploy Strategy - Coolify Integration
+
+### ✅ **ESTRATÉGIA DEFINIDA**: Integração com Infraestrutura Existente
+
+#### Infraestrutura Aproveitada:
+- **PostgreSQL**: `138.201.152.160:5432` ✅
+- **Supabase Kong**: Já configurado ✅
+- **Domains**: `event-connect.app` e `api.event-connect.app` ✅
+
+#### Arquivos de Deploy Criados:
+- ✅ `docker-compose.coolify.yml` - Otimizado para Coolify
+- ✅ `coolify.env.example` - Variáveis de ambiente
+- ✅ `COOLIFY_DEPLOYMENT_STRATEGY.md` - Guia completo
+
+#### URLs de Produção:
+- **Frontend**: `https://event-connect.app`
+- **API**: `https://api.event-connect.app`
+- **Health Check**: `https://api.event-connect.app/api/health`
+
 ### 📋 Próximos Passos:
-1. ✅ Configurar variáveis de ambiente
-2. ✅ Testar integração completa com IA
-3. ✅ Documentar APIs
-4. ✅ Implementar testes
-5. ✅ Deploy em produção
+1. ✅ Configurar variáveis de ambiente no Coolify
+2. ✅ Criar projeto no Coolify com GitHub integration
+3. ✅ Configurar domains para os serviços
+4. ✅ Executar deploy e testar funcionalidades
+5. ✅ Configurar OpenAI API keys reais
 
 ---
 
-**Status Final**: ✅ **PROJETO APROVADO E FUNCIONANDO**
-**Recomendação**: Manter todas as versões atuais - estão otimizadas e compatíveis.
+**Status Final**: ✅ **PROJETO APROVADO E PRONTO PARA DEPLOY**
+**Estratégia**: Integração com Coolify + Supabase existente
+**Infraestrutura**: Hetzner CPX41 + Coolify + Supabase
+**Recomendação**: Deploy imediato usando arquivos criados.
