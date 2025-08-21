@@ -5,8 +5,27 @@ const supabaseUrl = process.env.SUPABASE_URL || 'https://temp.supabase.co'
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'temp_key'
 const jwtSecret = process.env.SUPABASE_JWT_SECRET || 'temp_secret'
 
-// Client admin do Supabase para operações no backend
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+// Lazy initialization do Supabase client
+let _supabaseAdmin: any = null
+
+export const getSupabaseAdmin = () => {
+  if (!_supabaseAdmin) {
+    // Durante build ou sem configuração, retorna um mock
+    if (!supabaseUrl || supabaseUrl === 'https://temp.supabase.co' || supabaseServiceKey === 'temp_key') {
+      console.warn('Supabase não configurado, usando client mock')
+      _supabaseAdmin = {
+        from: () => ({ select: () => Promise.resolve({ data: [], error: null }) }),
+        auth: { getUser: () => Promise.resolve({ data: { user: null }, error: null }) }
+      }
+    } else {
+      _supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+    }
+  }
+  return _supabaseAdmin
+}
+
+// Função para obter o client apenas quando necessário
+export const supabaseAdmin = getSupabaseAdmin()
 
 export interface SupabaseUser {
   id: string
@@ -19,6 +38,11 @@ export interface SupabaseUser {
 
 export async function verifySupabaseJWT(token: string): Promise<SupabaseUser | null> {
   try {
+    // Durante o build, não tenta verificar JWT
+    if (!jwtSecret || jwtSecret === 'temp_secret') {
+      return null
+    }
+
     // Verifica e decodifica o JWT do Supabase
     const decoded = jwt.verify(token, jwtSecret) as any
     
