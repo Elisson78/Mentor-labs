@@ -1,9 +1,9 @@
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI } from '@ai-sdk/openai';
 
 // Configuração do OpenRouter
-export const openrouter = openai({
+export const openrouter = createOpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY || '',
 });
 
 // Modelos disponíveis no OpenRouter
