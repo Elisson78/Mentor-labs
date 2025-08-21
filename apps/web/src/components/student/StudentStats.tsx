@@ -29,7 +29,7 @@ function StatCard({ title, value, icon, bgColor, delay = 0 }: StatCardProps) {
               <p className="text-xl sm:text-2xl md:text-3xl font-bold">{value}</p>
             </div>
             <div className="opacity-80">
-              {React.cloneElement(icon as React.ReactElement, { className: "w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" })}
+              {React.cloneElement(icon as React.ReactElement<any>, { className: "w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" })}
             </div>
           </div>
         </CardContent>

@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Client estático para uso geral
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://temp.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'temp_anon'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 

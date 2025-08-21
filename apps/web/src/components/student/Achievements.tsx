@@ -98,7 +98,7 @@ export function Achievements() {
                   ${achievement.unlocked ? achievement.bgColor : 'bg-gray-100'}
                 `}>
                   <div className={achievement.iconColor}>
-                    {React.cloneElement(achievement.icon as React.ReactElement, { className: "w-4 h-4 sm:w-5 sm:h-5" })}
+                    {React.cloneElement(achievement.icon as React.ReactElement<any>, { className: "w-4 h-4 sm:w-5 sm:h-5" })}
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">

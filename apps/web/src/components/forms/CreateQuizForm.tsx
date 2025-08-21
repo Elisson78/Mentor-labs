@@ -28,10 +28,11 @@ interface QuizQuestion {
   id: string;
   question: string;
   type: 'multiple-choice' | 'true-false' | 'short-answer';
-  options?: string[];
-  correctAnswer: string;
+  options: string[];
+  correctAnswer: string | string[];
   mediaUrl?: string;
-  mediaType?: 'image' | 'video';
+  mediaType?: 'image' | 'video' | 'link';
+  points: number;
 }
 
 export function CreateQuizForm() {
@@ -105,10 +106,11 @@ export function CreateQuizForm() {
       id: `ai-generated-${timestamp}-${index}`,
       question: q.question,
       type: 'multiple-choice' as const,
-      options: q.options,
+      options: q.options || [],
       correctAnswer: q.correctAnswer.toString(),
       mediaUrl: formData.supportMaterialLink,
-      mediaType: 'video' as const
+      mediaType: 'video' as const,
+      points: 10
     }));
 
     setFormData(prev => ({

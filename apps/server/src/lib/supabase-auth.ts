@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import jwt from 'jsonwebtoken'
 
-const supabaseUrl = process.env.SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const jwtSecret = process.env.SUPABASE_JWT_SECRET!
+const supabaseUrl = process.env.SUPABASE_URL || 'https://temp.supabase.co'
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'temp_key'
+const jwtSecret = process.env.SUPABASE_JWT_SECRET || 'temp_secret'
 
 // Client admin do Supabase para operações no backend
 export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)

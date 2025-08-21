@@ -9,6 +9,10 @@ services:
     build:
       context: ./apps/server
       dockerfile: Dockerfile
+      args:
+        - SUPABASE_URL=${SUPABASE_URL:-https://temp.supabase.co}
+        - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-temp_key}
+        - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:-temp_secret}
     container_name: nentor-server
     restart: unless-stopped
     environment:
@@ -62,6 +66,9 @@ services:
     build:
       context: ./apps/web
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-https://temp.supabase.co}
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-temp_anon}
     container_name: nentor-web
     restart: unless-stopped
     environment:
