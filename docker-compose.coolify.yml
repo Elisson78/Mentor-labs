@@ -23,10 +23,10 @@ services:
       - NEXT_PUBLIC_API_URL=https://api.event-connect.app
       - NEXT_PUBLIC_SERVER_URL=https://api.event-connect.app
       
-      # Supabase (já configurado no Coolify)
-      - SUPABASE_URL=${SUPABASE_URL:-https://temp.supabase.co}
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-temp_key}
-      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:-temp_secret}
+      # Supabase (configurado no Coolify)
+      - SUPABASE_URL=${SUPABASE_URL:-http://supabase-uoocsgggcogs04w484k8ss8g:8000}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:-gVpem5dwt2w0SC70vsXEkDZY6q3crzy5}
       
       # OpenAI
       - OPENAI_API_KEY=${OPENAI_API_KEY:-temp_openai}
@@ -78,8 +78,8 @@ services:
       - NEXT_PUBLIC_SERVER_URL=https://api.event-connect.app
       
       # Supabase (cliente)
-      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-https://temp.supabase.co}
-      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-temp_anon}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-http://138.201.152.160:8000}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-N1SAsPI9IjpSvk5f}
       
       # Environment
       - NODE_ENV=production

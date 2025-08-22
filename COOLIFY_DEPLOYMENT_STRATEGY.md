@@ -38,7 +38,15 @@
 DATABASE_URL=postgresql://postgres:CSQ0OC3A0KQAwdfuxdBwKuOeZHcBZAeI@138.201.152.160:5432/postgres
 NEXT_PUBLIC_API_URL=https://api.event-connect.app
 NEXT_PUBLIC_WEB_URL=https://event-connect.app
-SUPABASE_URL=https://temp.supabase.co
+
+# Supabase (configurado no Coolify)
+SUPABASE_URL=http://supabase-uoocsgggcogs04w484k8ss8g:8000
+SUPABASE_ANON_KEY=N1SAsPI9IjpSvk5f
+SUPABASE_JWT_SECRET=gVpem5dwt2w0SC70vsXEkDZY6q3crzy5
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+NEXT_PUBLIC_SUPABASE_URL=http://138.201.152.160:8000
+NEXT_PUBLIC_SUPABASE_ANON_KEY=N1SAsPI9IjpSvk5f
+
 # ... demais variáveis do coolify.env.example
 ```
 
