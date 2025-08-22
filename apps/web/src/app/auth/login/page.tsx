@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Crown, BookOpen, ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { createSupabaseClient } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,26 +33,31 @@ export default function LoginPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulação de login - em produção, conectar com backend
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      if (formData.email && formData.password && formData.userType) {
-        // Armazenar dados do usuário no localStorage
-        const userData = {
-          email: formData.email,
-          userType: formData.userType,
-          name: "ELISSON UZUAL", // Em produção, viria do backend
-          loginTime: new Date().toISOString()
-        };
-        
-        localStorage.setItem('userSession', JSON.stringify(userData));
+    const supabase = createSupabaseClient();
+    
+    try {
+      // Fazer login com Supabase Auth
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (error) {
+        toast.error("Erro ao fazer login: " + error.message);
+        setIsLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        // Armazenar tipo de usuário no metadata ou localStorage temporariamente
+        // Em produção, isso viria de uma tabela de perfis no Supabase
         localStorage.setItem('userType', formData.userType);
-        localStorage.setItem('authToken', 'demo-token-' + Date.now()); // Token simulado
+        
+        toast.success("Login realizado com sucesso!");
         
         // Redirecionamento baseado no tipo de usuário
         if (formData.userType === "mentor") {
@@ -59,7 +66,12 @@ export default function LoginPage() {
           router.push("/aluno_dashboard");
         }
       }
-    }, 1000);
+    } catch (error) {
+      console.error("Erro no login:", error);
+      toast.error("Erro inesperado ao fazer login");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

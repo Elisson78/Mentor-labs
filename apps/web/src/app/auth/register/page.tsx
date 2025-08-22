@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Crown, BookOpen, ArrowLeft, ArrowRight, User } from "lucide-react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { createSupabaseClient } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -38,23 +40,75 @@ export default function RegisterPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulação de cadastro - em produção, conectar com backend
-    setTimeout(() => {
+    // Validações
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("As senhas não coincidem");
       setIsLoading(false);
-      
-      if (formData.password === formData.confirmPassword && formData.agreeTerms && formData.userType) {
-        // Redirecionamento baseado no tipo de usuário
-        if (formData.userType === "mentor") {
-          router.push("/dashboard");
+      return;
+    }
+    
+    if (!formData.agreeTerms) {
+      toast.error("Você deve aceitar os termos de uso");
+      setIsLoading(false);
+      return;
+    }
+    
+    if (!formData.userType) {
+      toast.error("Selecione o tipo de usuário");
+      setIsLoading(false);
+      return;
+    }
+    
+    const supabase = createSupabaseClient();
+    
+    try {
+      // Criar conta com Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name,
+            user_type: formData.userType
+          }
+        }
+      });
+
+      if (error) {
+        toast.error("Erro ao criar conta: " + error.message);
+        setIsLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        // Armazenar tipo de usuário temporariamente
+        localStorage.setItem('userType', formData.userType);
+        
+        if (data.user.email_confirmed_at) {
+          // Email já confirmado, fazer login
+          toast.success("Conta criada com sucesso!");
+          
+          if (formData.userType === "mentor") {
+            router.push("/dashboard");
+          } else {
+            router.push("/aluno_dashboard");
+          }
         } else {
-          router.push("/aluno_dashboard");
+          // Precisa confirmar email
+          toast.success("Conta criada! Verifique seu email para confirmar.");
+          router.push("/auth/login");
         }
       }
-    }, 1000);
+    } catch (error) {
+      console.error("Erro no cadastro:", error);
+      toast.error("Erro inesperado ao criar conta");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -1,5 +1,17 @@
-import { pgTable, text, integer, real, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, real, timestamp, boolean, uuid } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
+
+// Tabela de perfis de usuário (sincronizada com Supabase Auth)
+export const profiles = pgTable('profiles', {
+  id: uuid('id').primaryKey(), // UUID do Supabase Auth
+  email: text('email').notNull().unique(),
+  name: text('name').notNull(),
+  userType: text('user_type').notNull(), // 'mentor' ou 'student'
+  avatar: text('avatar'),
+  bio: text('bio'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
 
 // Tabela de quizzes
 export const quizzes = pgTable('quizzes', {
@@ -75,6 +87,8 @@ export const videoProcessing = pgTable('video_processing', {
   updatedAt: timestamp('updated_at').defaultNow(),
 });
 
+export type Profile = typeof profiles.$inferSelect;
+export type NewProfile = typeof profiles.$inferInsert;
 export type Quiz = typeof quizzes.$inferSelect;
 export type NewQuiz = typeof quizzes.$inferInsert;
 export type Question = typeof questions.$inferSelect;
