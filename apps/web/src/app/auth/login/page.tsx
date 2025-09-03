@@ -51,8 +51,15 @@ export default function LoginPage() {
         
         // Definir token de autenticação do Supabase nos cookies para o middleware
         const accessToken = data.session.access_token;
-        document.cookie = `sb-access-token=${accessToken}; path=/; max-age=3600; secure; samesite=strict`;
-        document.cookie = `supabase-auth-token=${accessToken}; path=/; max-age=3600; secure; samesite=strict`;
+        
+        // Configuração de cookies compatível com HTTP e HTTPS
+        const isSecure = window.location.protocol === 'https:';
+        const cookieOptions = isSecure 
+          ? '; path=/; max-age=3600; secure; samesite=strict'
+          : '; path=/; max-age=3600; samesite=lax';
+        
+        document.cookie = `sb-access-token=${accessToken}${cookieOptions}`;
+        document.cookie = `supabase-auth-token=${accessToken}${cookieOptions}`;
         
         // DETERMINAÇÃO RÁPIDA DE ROLE (sem consulta lenta ao banco)
         let primaryRole = 'student'; // fallback padrão

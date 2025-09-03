@@ -111,8 +111,15 @@ export default function RegisterPage() {
             
             // Definir token de autenticação
             const accessToken = loginData.session.access_token;
-            document.cookie = `sb-access-token=${accessToken}; path=/; max-age=3600; secure; samesite=strict`;
-            document.cookie = `supabase-auth-token=${accessToken}; path=/; max-age=3600; secure; samesite=strict`;
+            
+            // Configuração de cookies compatível com HTTP e HTTPS
+            const isSecure = window.location.protocol === 'https:';
+            const cookieOptions = isSecure 
+              ? '; path=/; max-age=3600; secure; samesite=strict'
+              : '; path=/; max-age=3600; samesite=lax';
+            
+            document.cookie = `sb-access-token=${accessToken}${cookieOptions}`;
+            document.cookie = `supabase-auth-token=${accessToken}${cookieOptions}`;
 
             // BUSCAR ROLES DO BANCO DE DADOS
             console.log("🔍 Buscando roles do usuário no banco...");
