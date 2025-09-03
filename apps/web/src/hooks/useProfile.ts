@@ -70,7 +70,7 @@ export function useProfile() {
           id: profileData.id,
           email: profileData.email,
           name: profileData.name,
-          user_type: profileData.userType
+          userType: profileData.userType
         }])
         .select()
         .single()

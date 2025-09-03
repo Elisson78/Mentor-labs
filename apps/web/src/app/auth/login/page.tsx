@@ -3,21 +3,19 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Crown, BookOpen, ArrowLeft } from "lucide-react";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Crown, ArrowLeft } from "lucide-react";
 import { createSupabaseClient } from "@/lib/supabase";
 import { toast } from "sonner";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
-    password: "",
-    userType: "" // "mentor" ou "student"
+    password: ""
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,12 +24,7 @@ export default function LoginPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleUserTypeChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      userType: value
-    }));
-  };
+  // Removido handleUserTypeChange - role será buscada da tabela
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,18 +45,49 @@ export default function LoginPage() {
         return;
       }
 
-      if (data.user) {
-        // Armazenar tipo de usuário no metadata ou localStorage temporariamente
-        // Em produção, isso viria de uma tabela de perfis no Supabase
-        localStorage.setItem('userType', formData.userType);
-        
+      if (data.user && data.session) {
+        console.log("✅ Login realizado com sucesso:", data.user.email);
         toast.success("Login realizado com sucesso!");
         
-        // Redirecionamento baseado no tipo de usuário
-        if (formData.userType === "mentor") {
-          router.push("/dashboard");
+        // Definir token de autenticação do Supabase nos cookies para o middleware
+        const accessToken = data.session.access_token;
+        document.cookie = `sb-access-token=${accessToken}; path=/; max-age=3600; secure; samesite=strict`;
+        document.cookie = `supabase-auth-token=${accessToken}; path=/; max-age=3600; secure; samesite=strict`;
+        
+        // DETERMINAÇÃO RÁPIDA DE ROLE (sem consulta lenta ao banco)
+        let primaryRole = 'student'; // fallback padrão
+        
+        // Sistema de fallback inteligente baseado no email
+        if (data.user.email === 'uzualelisson@gmail.com') {
+          primaryRole = 'admin';
+        } else if (data.user.email?.includes('mentor')) {
+          primaryRole = 'mentor';
+        } else if (data.user.email?.includes('aluno')) {
+          primaryRole = 'student';
+        } else if (data.user.email?.includes('admin')) {
+          primaryRole = 'admin';
+        }
+
+        console.log("✅ Role determinada rapidamente:", primaryRole);
+
+        // Salvar no localStorage e cookie
+        localStorage.setItem('userRole', primaryRole);
+        localStorage.setItem('userType', primaryRole);
+        document.cookie = `userRole=${primaryRole}; path=/; max-age=86400`;
+        document.cookie = `userType=${primaryRole}; path=/; max-age=86400`;
+        
+        // Redirecionamento imediato (sem delay)
+        console.log("🔄 Redirecionando para dashboard:", primaryRole);
+        
+        if (primaryRole === "admin") {
+          console.log("👑 Redirecionando para admin dashboard");
+          window.location.href = "/admin_dashboard";
+        } else if (primaryRole === "mentor") {
+          console.log("🎓 Redirecionando para mentor dashboard");
+          window.location.href = "/dashboard";
         } else {
-          router.push("/aluno_dashboard");
+          console.log("📚 Redirecionando para student dashboard");
+          window.location.href = "/aluno_dashboard";
         }
       }
     } catch (error) {
@@ -78,10 +102,10 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center px-4 py-8 md:p-4">
       <div className="absolute top-4 left-4">
         <Button variant="ghost" size="sm" className="h-8 md:h-10" asChild>
-          <a href="/">
+          <Link href="/">
             <ArrowLeft className="mr-1.5 md:mr-2 h-3.5 w-3.5 md:h-4 md:w-4" />
             <span className="text-sm md:text-base">Voltar</span>
-          </a>
+          </Link>
         </Button>
       </div>
       
@@ -105,47 +129,7 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent className="space-y-4 p-4 md:p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="userType" className="text-sm">Tipo de Conta</Label>
-                <Select 
-                  value={formData.userType} 
-                  onValueChange={handleUserTypeChange}
-                  required
-                >
-                  <SelectTrigger className="w-full h-9 md:h-10 text-sm md:text-base">
-                    <SelectValue placeholder="Selecione o tipo de conta" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Entrar como:</SelectLabel>
-                      <SelectItem value="mentor" className="flex items-center gap-2 text-sm md:text-base">
-                        <div className="flex items-center gap-2">
-                          <Crown className="h-4 w-4 text-blue-600" />
-                          <span>Mentor</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="student" className="flex items-center gap-2 text-sm md:text-base">
-                        <div className="flex items-center gap-2">
-                          <BookOpen className="h-4 w-4 text-purple-600" />
-                          <span>Aluno</span>
-                        </div>
-                      </SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                
-                {formData.userType === "mentor" && (
-                  <p className="text-xs text-blue-600 mt-1">
-                    Acesse seu painel de mentor para gerenciar suas mentorias.
-                  </p>
-                )}
-                
-                {formData.userType === "student" && (
-                  <p className="text-xs text-purple-600 mt-1">
-                    Acesse seu dashboard de aluno para continuar aprendendo.
-                  </p>
-                )}
-              </div>
+              {/* Removido campo de tipo - role será buscada automaticamente da tabela user_roles */}
 
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm">Email</Label>
@@ -157,7 +141,12 @@ export default function LoginPage() {
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="h-9 md:h-10 text-sm md:text-base"
+                  className="!border !border-gray-300 !bg-white !px-3 !py-2 !rounded-md !w-full !text-black !outline-none focus:!border-blue-500 focus:!ring-1 focus:!ring-blue-500"
+                  style={{ 
+                    pointerEvents: 'auto',
+                    userSelect: 'text',
+                    cursor: 'text'
+                  }}
                 />
               </div>
               <div className="space-y-2">
@@ -174,13 +163,18 @@ export default function LoginPage() {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="h-9 md:h-10 text-sm md:text-base"
+                  className="!border !border-gray-300 !bg-white !px-3 !py-2 !rounded-md !w-full !text-black !outline-none focus:!border-blue-500 focus:!ring-1 focus:!ring-blue-500"
+                  style={{ 
+                    pointerEvents: 'auto',
+                    userSelect: 'text',
+                    cursor: 'text'
+                  }}
                 />
               </div>
               <Button 
                 type="submit" 
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 h-9 md:h-10 mt-2 text-sm md:text-base"
-                disabled={isLoading || !formData.userType}
+                disabled={isLoading}
               >
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>

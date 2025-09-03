@@ -5,6 +5,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { StudentSidebar } from "./StudentSidebar";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, User, Menu, Crown } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
+
+// Componente para saudação dinâmica
+function DynamicGreeting() {
+  const { user } = useAuth();
+  
+  const displayName = user?.user_metadata?.name || 
+                     user?.email?.split('@')[0]?.toUpperCase() || 
+                     'USUÁRIO';
+  
+  return <>Olá, {displayName}</>;
+}
 
 interface StudentDashboardLayoutProps {
   children: React.ReactNode;
@@ -84,7 +96,7 @@ export function StudentDashboardLayout({ children }: StudentDashboardLayoutProps
               {/* Dashboard Title */}
               <div className="hidden md:block">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  Olá, ELISSON 
+                  <DynamicGreeting />
                   <span className="text-xl sm:text-2xl">👋</span>
                 </h1>
                 <p className="text-sm text-gray-600 mt-0.5">

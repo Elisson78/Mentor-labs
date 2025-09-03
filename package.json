@@ -18,6 +18,7 @@
     "db:migrate": "turbo -F server db:migrate"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
     "pg": "^8.16.3"
   },
   "devDependencies": {

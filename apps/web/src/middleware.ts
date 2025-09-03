@@ -1,31 +1,52 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   
-  // Rotas que requerem autenticação
-  const protectedRoutes = ['/dashboard', '/aluno_dashboard', '/quiz/criar', '/mentoria/criar']
-  const publicRoutes = ['/', '/auth/login', '/auth/register']
+  // Rotas protegidas e suas roles necessárias
+  const adminRoutes = ['/admin_dashboard']
+  const mentorRoutes = ['/dashboard', '/quiz/criar', '/mentoria/criar']
+  const studentRoutes = ['/aluno_dashboard']
+  const allProtectedRoutes = [...adminRoutes, ...mentorRoutes, ...studentRoutes]
   
-  const isProtectedRoute = protectedRoutes.some(route => 
+  const isProtectedRoute = allProtectedRoutes.some(route => 
     req.nextUrl.pathname.startsWith(route)
   )
   
   if (isProtectedRoute) {
     try {
-      // Verificar token do Supabase no cookie ou header
+      // Verificar token do Supabase no cookie
       const token = req.cookies.get('sb-access-token')?.value || 
-                   req.headers.get('authorization')?.replace('Bearer ', '')
+                   req.cookies.get('supabase-auth-token')?.value
       
       if (!token) {
         // Redirecionar para login se não tiver token
         return NextResponse.redirect(new URL('/auth/login', req.url))
       }
       
-      // Aqui poderíamos verificar o token com Supabase
-      // Mas para simplicidade, vamos confiar no client-side por enquanto
+      // Verificar se o usuário está tentando acessar rota errada baseada na role
+      const userRole = req.cookies.get('userRole')?.value || req.cookies.get('userType')?.value
+      
+      if (userRole) {
+        // Redirecionamentos baseados na role
+        if (userRole === 'admin') {
+          if (mentorRoutes.some(route => req.nextUrl.pathname.startsWith(route)) ||
+              studentRoutes.some(route => req.nextUrl.pathname.startsWith(route))) {
+            return NextResponse.redirect(new URL('/admin_dashboard', req.url))
+          }
+        } else if (userRole === 'mentor') {
+          if (adminRoutes.some(route => req.nextUrl.pathname.startsWith(route)) ||
+              studentRoutes.some(route => req.nextUrl.pathname.startsWith(route))) {
+            return NextResponse.redirect(new URL('/dashboard', req.url))
+          }
+        } else if (userRole === 'student') {
+          if (adminRoutes.some(route => req.nextUrl.pathname.startsWith(route)) ||
+              mentorRoutes.some(route => req.nextUrl.pathname.startsWith(route))) {
+            return NextResponse.redirect(new URL('/aluno_dashboard', req.url))
+          }
+        }
+      }
       
     } catch (error) {
       console.error('Auth middleware error:', error)

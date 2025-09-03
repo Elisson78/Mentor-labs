@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useActiveRoute } from "@/hooks/useActiveRoute";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { useRouter } from "next/navigation";
 import {
   Crown,
@@ -20,6 +21,31 @@ import {
 interface StudentSidebarProps {
   className?: string;
   onClose?: () => void;
+}
+
+// Componente para exibir informações do usuário logado
+function UserInfo() {
+  const { user } = useAuth();
+  
+  if (!user) {
+    return (
+      <>
+        <p className="font-semibold text-sm text-gray-900">Carregando...</p>
+        <p className="text-xs text-gray-500 truncate">...</p>
+      </>
+    );
+  }
+
+  const displayName = user.user_metadata?.name || 
+                     user.email?.split('@')[0]?.toUpperCase() || 
+                     'USUÁRIO';
+  
+  return (
+    <>
+      <p className="font-semibold text-sm text-gray-900">{displayName}</p>
+      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+    </>
+  );
 }
 
 export function StudentSidebar({ className, onClose }: StudentSidebarProps) {
@@ -142,8 +168,7 @@ export function StudentSidebar({ className, onClose }: StudentSidebarProps) {
             <span className="text-white font-semibold text-sm">E</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm text-gray-900">ELISSON UZUAL</p>
-            <p className="text-xs text-gray-500 truncate">uzualelisson@gmail.com</p>
+            <UserInfo />
           </div>
         </div>
         <Button 
