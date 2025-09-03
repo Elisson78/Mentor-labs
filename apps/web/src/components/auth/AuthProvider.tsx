@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseClient, hasValidSupabaseConfig } from '@/lib/supabase'
 
 interface AuthContextType {
   user: User | null
@@ -32,12 +32,24 @@ export default function AuthProvider({
   const supabase = createSupabaseClient()
 
   useEffect(() => {
+    // Verificar se temos configuração válida do Supabase
+    if (!hasValidSupabaseConfig()) {
+      console.warn('⚠️ Supabase não configurado - modo offline')
+      setLoading(false)
+      return
+    }
+
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setSession(session)
+        setUser(session?.user ?? null)
+      } catch (error) {
+        console.error('❌ Erro ao buscar sessão:', error)
+      } finally {
+        setLoading(false)
+      }
     }
 
     getInitialSession()

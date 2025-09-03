@@ -1,16 +1,18 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Client estático para uso geral
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
 
 // Validar variáveis de ambiente
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ Variáveis do Supabase não configuradas:', {
-    hasUrl: !!supabaseUrl,
-    hasKey: !!supabaseAnonKey
+const hasValidConfig = !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!hasValidConfig) {
+  console.warn('⚠️ Variáveis do Supabase não configuradas:', {
+    hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   })
-  throw new Error('Supabase environment variables are not configured')
+  console.warn('⚠️ Usando valores placeholder para build - Configure as variáveis no Coolify!')
 }
 
 console.log('✅ Supabase configurado:', {
@@ -44,4 +46,14 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, supabaseOptio
 // Supabase client para uso no client-side (componentes React)
 export const createSupabaseClient = () => {
   return createClient(supabaseUrl, supabaseAnonKey, supabaseOptions)
+}
+
+// Helper para verificar se a configuração é válida
+export const hasValidSupabaseConfig = () => hasValidConfig
+
+// Helper para mostrar erro amigável quando não tem configuração
+export const requireSupabaseConfig = (action: string) => {
+  if (!hasValidConfig) {
+    throw new Error(`Não é possível ${action} - Configure as variáveis NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY no Coolify`)
+  }
 }
