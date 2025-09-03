@@ -1,15 +1,41 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Client estático para uso geral
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://temp.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'temp_anon'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// Configurações para desenvolvimento (ignorar SSL)
+// Validar variáveis de ambiente
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('❌ Variáveis do Supabase não configuradas:', {
+    hasUrl: !!supabaseUrl,
+    hasKey: !!supabaseAnonKey
+  })
+  throw new Error('Supabase environment variables are not configured')
+}
+
+console.log('✅ Supabase configurado:', {
+  url: supabaseUrl.substring(0, 30) + '...',
+  hasKey: !!supabaseAnonKey
+})
+
+// Configurações otimizadas para produção
 const supabaseOptions = {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true
+  },
+  global: {
+    fetch: (url: RequestInfo | URL, options?: RequestInit) => {
+      console.log('🔗 Supabase request:', typeof url === 'string' ? url.substring(0, 50) + '...' : url)
+      return fetch(url, {
+        ...options,
+        headers: {
+          ...options?.headers,
+          'Cache-Control': 'no-cache'
+        }
+      })
+    }
   }
 }
 
