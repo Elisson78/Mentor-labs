@@ -14,7 +14,7 @@ const FALLBACK_USERS = [
     password: 'test123'
   },
   {
-    id: 'student-1', 
+    id: 'student-1',
     email: 'aluno.teste@gmail.com',
     name: 'Maria Santos',
     user_type: 'student',
@@ -22,7 +22,7 @@ const FALLBACK_USERS = [
   },
   {
     id: 'student-2',
-    email: 'aluno2.teste@gmail.com', 
+    email: 'aluno2.teste@gmail.com',
     name: 'Carlos Oliveira',
     user_type: 'student',
     password: 'test123'
@@ -31,7 +31,7 @@ const FALLBACK_USERS = [
     id: 'student-3',
     email: 'isaac@gmail.com',
     name: 'Isaac',
-    user_type: 'student', 
+    user_type: 'student',
     password: 'test123'
   }
 ];
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
         if (!fallbackUser) {
           return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
         }
-        
+
         if (fallbackUser.password !== password) {
           return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
         }
@@ -84,13 +84,13 @@ export async function POST(req: Request) {
 
       } catch (error) {
         console.error('❌ Erro PostgreSQL, usando fallback:', error instanceof Error ? error.message : String(error));
-        
+
         // Em caso de erro, usar fallback
         const fallbackUser = FALLBACK_USERS.find(u => u.email === email);
         if (!fallbackUser) {
           return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
         }
-        
+
         if (fallbackUser.password !== password) {
           return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
         }
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
           .from(profiles)
           .where(eq(profiles.email, email))
           .limit(1);
-        
+
         if (existingUser) {
           return NextResponse.json({ error: 'Email já cadastrado' }, { status: 400 });
         }
@@ -161,11 +161,11 @@ export async function GET() {
     }).from(profiles);
 
     console.log(`📊 ${users.length} usuários encontrados no PostgreSQL`);
-    
+
     return NextResponse.json(users);
   } catch (error) {
     console.error('❌ Erro ao buscar usuários no PostgreSQL:', error);
-    
+
     // Fallback: retornar usuários de exemplo se o banco não estiver acessível
     console.log('🔄 Usando dados de fallback...');
     const fallbackUsers = FALLBACK_USERS.map(user => ({
@@ -174,7 +174,7 @@ export async function GET() {
       name: user.name,
       userType: user.user_type
     }));
-    
+
     return NextResponse.json(fallbackUsers);
   }
 }

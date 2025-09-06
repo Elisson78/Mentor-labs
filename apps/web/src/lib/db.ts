@@ -12,7 +12,7 @@ const client = postgres(connectionString, {
   idle_timeout: 20,
   connect_timeout: 10, // Reduzir timeout para falhar mais rápido
   prepare: false, // Desabilitar prepared statements para evitar conflitos
-  ssl: 'require', // Usar SSL como requerido pelo PostgreSQL
+  ssl: connectionString.includes('localhost') ? false : 'require', // SSL apenas para conexões remotas
   transform: {
     undefined: null, // Transformar undefined em null
   },
