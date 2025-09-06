@@ -42,46 +42,66 @@ export async function POST(req: Request) {
 
     if (action === 'login') {
       try {
-        // Buscar usuário no banco PostgreSQL
+        // Tentar primeiro o banco PostgreSQL
         const [user] = await db.select()
           .from(profiles)
           .where(eq(profiles.email, email))
           .limit(1);
 
-        if (!user) {
-          // Fallback: verificar na base de usuários de desenvolvimento
-          const fallbackUser = FALLBACK_USERS.find(u => u.email === email);
-          if (!fallbackUser) {
-            return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
-          }
-          
-          if (fallbackUser.password !== password) {
+        if (user) {
+          if (user.password !== password) {
             return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
           }
 
-          // Retornar dados do usuário fallback
+          // Usuário encontrado no PostgreSQL
+          console.log('✅ Login realizado via PostgreSQL');
           return NextResponse.json({
-            id: fallbackUser.id,
-            email: fallbackUser.email,
-            name: fallbackUser.name,
-            userType: fallbackUser.user_type
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            userType: user.user_type
           });
         }
 
-        if (user.password !== password) {
+        // Se não encontrou no PostgreSQL, tentar fallback
+        const fallbackUser = FALLBACK_USERS.find(u => u.email === email);
+        if (!fallbackUser) {
+          return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
+        }
+        
+        if (fallbackUser.password !== password) {
           return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
         }
 
-        // Retornar dados do usuário do banco PostgreSQL (sem senha)
+        // Login via fallback
+        console.log('✅ Login realizado via fallback');
         return NextResponse.json({
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          userType: user.user_type
+          id: fallbackUser.id,
+          email: fallbackUser.email,
+          name: fallbackUser.name,
+          userType: fallbackUser.user_type
         });
+
       } catch (error) {
-        console.error('❌ Erro ao buscar usuário no PostgreSQL:', error);
-        return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+        console.error('❌ Erro PostgreSQL, usando fallback:', error.message);
+        
+        // Em caso de erro, usar fallback
+        const fallbackUser = FALLBACK_USERS.find(u => u.email === email);
+        if (!fallbackUser) {
+          return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
+        }
+        
+        if (fallbackUser.password !== password) {
+          return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
+        }
+
+        console.log('✅ Login realizado via fallback (erro PostgreSQL)');
+        return NextResponse.json({
+          id: fallbackUser.id,
+          email: fallbackUser.email,
+          name: fallbackUser.name,
+          userType: fallbackUser.user_type
+        });
       }
     }
 
