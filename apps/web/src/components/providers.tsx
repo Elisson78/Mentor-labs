@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { AuthProvider } from "@/components/auth/AuthProvider"
 import { ThemeProvider } from "@/components/theme-provider"
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider
       attribute="class"
