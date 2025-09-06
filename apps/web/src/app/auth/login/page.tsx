@@ -41,7 +41,12 @@ export default function LoginPage() {
         
         // Redirecionar baseado no tipo de usuário
         const targetUrl = user.userType === 'mentor' ? '/dashboard' : '/aluno_dashboard';
-        router.push(targetUrl);
+        console.log('🚀 Redirecionando para:', targetUrl, 'Tipo de usuário:', user.userType);
+        
+        // Aguardar um pouco antes de redirecionar
+        setTimeout(() => {
+          router.push(targetUrl);
+        }, 1000);
         
       } else {
         toast.error("Email ou senha inválidos");

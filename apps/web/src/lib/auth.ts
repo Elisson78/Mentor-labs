@@ -78,6 +78,12 @@ export const login = async (email: string, password: string): Promise<User | nul
     if (response.ok) {
       const user = await response.json();
       setCurrentUser(user);
+      
+      // Salvar também em cookie para o middleware
+      if (typeof window !== 'undefined') {
+        document.cookie = `replit_current_user=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=${60 * 60 * 24 * 7}`;
+      }
+      
       console.log('✅ Login realizado via banco de dados PostgreSQL');
       return user;
     } else {
@@ -105,6 +111,12 @@ export const register = async (email: string, password: string, name: string, us
     if (response.ok) {
       const user = await response.json();
       setCurrentUser(user);
+      
+      // Salvar também em cookie para o middleware
+      if (typeof window !== 'undefined') {
+        document.cookie = `replit_current_user=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=${60 * 60 * 24 * 7}`;
+      }
+      
       console.log('✅ Usuário registrado via banco de dados PostgreSQL');
       return user;
     } else {
@@ -123,5 +135,11 @@ export const register = async (email: string, password: string, name: string, us
 // Fazer logout
 export const logout = () => {
   clearCurrentUser();
+  
+  // Limpar cookie do middleware
+  if (typeof window !== 'undefined') {
+    document.cookie = 'replit_current_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  }
+  
   window.location.href = '/auth/login';
 };
