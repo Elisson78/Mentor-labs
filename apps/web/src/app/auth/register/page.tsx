@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Crown, BookOpen, ArrowLeft, ArrowRight, User } from "lucide-react";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createSupabaseClient } from "@/lib/supabase";
+import { Crown, BookOpen, ArrowLeft, User } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { register } from "@/lib/auth";
 import { toast } from "sonner";
 
 export default function RegisterPage() {
@@ -64,358 +64,202 @@ export default function RegisterPage() {
       return;
     }
     
-    const supabase = createSupabaseClient();
-    
     try {
-      // Criar conta com Supabase Auth (com confirmação automática para desenvolvimento)
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            name: formData.name,
-            user_type: formData.userType,
-            email_confirm: true // Forçar confirmação automática
-          }
-        }
-      });
-
-      if (error) {
-        toast.error("Erro ao criar conta: " + error.message);
-        setIsLoading(false);
-        return;
-      }
-
-      if (data.user) {
-        console.log("✅ Usuário criado com sucesso:", data.user.email);
+      const user = await register(
+        formData.email, 
+        formData.password, 
+        formData.name, 
+        formData.userType as 'mentor' | 'student'
+      );
+      
+      if (user) {
         toast.success("Conta criada com sucesso!");
         
-        // FAZER LOGIN AUTOMÁTICO APÓS CADASTRO
-        console.log("🔐 Fazendo login automático...");
-        
-        try {
-          const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-          });
-
-          if (loginError) {
-            console.error("❌ Erro no login automático:", loginError.message);
-            toast.error("Conta criada! Faça login manualmente.");
-            router.push("/auth/login");
-            return;
-          }
-
-          if (loginData.user && loginData.session) {
-            console.log("✅ Login automático realizado!");
-            
-            // Definir token de autenticação
-            const accessToken = loginData.session.access_token;
-            
-            // Configuração de cookies compatível com HTTP e HTTPS
-            const isSecure = window.location.protocol === 'https:';
-            const cookieOptions = isSecure 
-              ? '; path=/; max-age=3600; secure; samesite=strict'
-              : '; path=/; max-age=3600; samesite=lax';
-            
-            document.cookie = `sb-access-token=${accessToken}${cookieOptions}`;
-            document.cookie = `supabase-auth-token=${accessToken}${cookieOptions}`;
-
-            // BUSCAR ROLES DO BANCO DE DADOS
-            console.log("🔍 Buscando roles do usuário no banco...");
-            const { data: userRoleData, error: roleError } = await supabase
-              .from('user_roles')
-              .select(`
-                roles:role_id (
-                  name,
-                  display_name,
-                  permissions
-                )
-              `)
-              .eq('user_id', loginData.user.id);
-
-            let primaryRole = formData.userType; // usar role selecionada como fallback
-
-            if (roleError) {
-              console.error('❌ Erro ao buscar roles:', roleError.message);
-              console.log('🔄 Usando role selecionada no cadastro:', formData.userType);
-            } else if (userRoleData && userRoleData.length > 0) {
-              const roles = userRoleData.map(ur => (ur.roles as any)?.name).filter(Boolean);
-              console.log("📋 Roles encontradas no banco:", roles);
-              
-              primaryRole = roles.find(r => r === 'admin') ||
-                           roles.find(r => r === 'mentor') ||
-                           roles.find(r => r === 'student') ||
-                           formData.userType;
-              
-              console.log("🎯 Role primária selecionada:", primaryRole);
-            } else {
-              console.log("⚠️ Nenhuma role no banco - usando role do cadastro");
-              
-              // Tentar atribuir role automaticamente
-              const { data: roles } = await supabase.from('roles').select('*');
-              const roleData = roles?.find(r => r.name === formData.userType);
-              
-              if (roleData) {
-                await supabase.from('user_roles').insert({
-                  user_id: loginData.user.id,
-                  role_id: roleData.id,
-                  assigned_at: new Date().toISOString()
-                });
-                console.log("✅ Role atribuída automaticamente no banco");
-              }
-            }
-
-            // Salvar role
-            localStorage.setItem('userRole', primaryRole);
-            localStorage.setItem('userType', primaryRole);
-            document.cookie = `userRole=${primaryRole}; path=/; max-age=86400`;
-            document.cookie = `userType=${primaryRole}; path=/; max-age=86400`;
-            
-            // Redirecionamento imediato baseado na role
-            console.log("🔄 Redirecionando para dashboard:", primaryRole);
-            
-            if (primaryRole === "admin") {
-              console.log("👑 Redirecionando para admin dashboard");
-              window.location.href = "/admin_dashboard";
-            } else if (primaryRole === "mentor") {
-              console.log("🎓 Redirecionando para mentor dashboard");
-              window.location.href = "/dashboard";
-            } else {
-              console.log("📚 Redirecionando para student dashboard");
-              window.location.href = "/aluno_dashboard";
-            }
-          }
-          
-        } catch (loginError) {
-          console.error("❌ Erro no login automático:", loginError);
-          toast.error("Conta criada! Faça login manualmente.");
-          router.push("/auth/login");
+        // Redirecionar baseado no tipo de usuário
+        if (user.userType === 'mentor') {
+          router.push('/dashboard');
+        } else {
+          router.push('/aluno_dashboard');
         }
+      } else {
+        toast.error("Erro ao criar conta");
       }
     } catch (error) {
-      console.error("Erro no cadastro:", error);
-      toast.error("Erro inesperado ao criar conta");
+      toast.error("Erro ao criar conta");
+      console.error('Erro no registro:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center px-4 py-8 md:p-4">
-      <div className="absolute top-4 left-4">
-        <Button variant="ghost" size="sm" className="h-8 md:h-10" asChild>
-          <Link href="/">
-            <ArrowLeft className="mr-1.5 md:mr-2 h-3.5 w-3.5 md:h-4 md:w-4" />
-            <span className="text-sm md:text-base">Voltar</span>
-          </Link>
-        </Button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-700 to-blue-800 flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl flex gap-8">
+        {/* Left Panel - Info */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="hidden lg:flex flex-1 flex-col justify-center text-white p-8"
+        >
+          <div className="mb-6">
+            <Crown className="w-12 h-12 text-yellow-400 mb-4" />
+            <h1 className="text-4xl font-bold mb-4">Junte-se a nós!</h1>
+            <p className="text-xl text-blue-100 mb-6">
+              Comece sua jornada de aprendizado gamificada
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <User className="w-5 h-5 text-yellow-400" />
+              <span>Crie sua conta gratuita</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <BookOpen className="w-5 h-5 text-yellow-400" />
+              <span>Acesse trilhas de aprendizado</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Crown className="w-5 h-5 text-yellow-400" />
+              <span>Ganhe pontos e conquistas</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Right Panel - Register Form */}
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="flex-1 flex items-center justify-center"
+        >
+          <Card className="w-full max-w-md border-0 shadow-2xl bg-white/95 backdrop-blur">
+            <CardHeader className="text-center pb-2">
+              <div className="flex items-center justify-center mb-4">
+                <Link 
+                  href="/" 
+                  className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Voltar ao início
+                </Link>
+              </div>
+              <CardTitle className="text-2xl font-bold text-gray-800">Criar Conta</CardTitle>
+              <CardDescription>
+                Preencha os dados abaixo para começar
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm">Nome completo</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Seu nome completo"
+                    required
+                    disabled={isLoading}
+                    className="h-11"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="seu@email.com"
+                    required
+                    disabled={isLoading}
+                    className="h-11"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="userType" className="text-sm">Tipo de usuário</Label>
+                  <Select onValueChange={handleUserTypeChange} disabled={isLoading}>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Selecione seu perfil" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="student">Estudante</SelectItem>
+                      <SelectItem value="mentor">Mentor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm">Senha</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="••••••••"
+                    required
+                    disabled={isLoading}
+                    className="h-11"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-sm">Confirmar senha</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    placeholder="••••••••"
+                    required
+                    disabled={isLoading}
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="agreeTerms"
+                    checked={formData.agreeTerms}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, agreeTerms: !!checked }))
+                    }
+                    disabled={isLoading}
+                  />
+                  <Label htmlFor="agreeTerms" className="text-xs text-gray-600">
+                    Aceito os <a href="#" className="text-blue-600 hover:underline">termos de uso</a> e <a href="#" className="text-blue-600 hover:underline">política de privacidade</a>
+                  </Label>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Criando conta..." : "Criar conta"}
+                </Button>
+              </form>
+            </CardContent>
+            
+            <CardFooter className="flex flex-col space-y-4 pt-0">
+              <div className="text-center text-sm text-gray-600">
+                Já tem uma conta?{" "}
+                <Link href="/auth/login" className="text-blue-600 hover:underline font-medium">
+                  Faça login aqui
+                </Link>
+              </div>
+            </CardFooter>
+          </Card>
+        </motion.div>
       </div>
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
-          <CardHeader className="space-y-1 text-center p-4 md:p-6">
-            <div className="flex justify-center mb-2">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-xl flex items-center justify-center">
-                <Crown className="h-5 w-5 md:h-6 md:w-6 text-white" />
-              </div>
-            </div>
-            <CardTitle className="text-xl md:text-2xl font-bold">Crie sua conta</CardTitle>
-            <CardDescription className="text-sm md:text-base">
-              Preencha seus dados para se cadastrar
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent className="space-y-4 p-4 md:p-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm">Nome completo</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="Seu nome completo"
-                  required
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="!border !border-gray-300 !bg-white !px-3 !py-2 !rounded-md !w-full !text-black !outline-none focus:!border-blue-500 focus:!ring-1 focus:!ring-blue-500"
-                  style={{ 
-                    pointerEvents: 'auto',
-                    userSelect: 'text',
-                    cursor: 'text'
-                  }}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="userType" className="text-sm">Tipo de Conta</Label>
-                <Select 
-                  value={formData.userType} 
-                  onValueChange={handleUserTypeChange}
-                  required
-                >
-                  <SelectTrigger className="w-full h-9 md:h-10 text-sm md:text-base">
-                    <SelectValue placeholder="Selecione o tipo de conta" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel className="text-xs md:text-sm">Eu quero me cadastrar como:</SelectLabel>
-                      <SelectItem value="admin" className="flex items-center gap-2 text-sm md:text-base">
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-red-600" />
-                          <span>Administrador</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="mentor" className="flex items-center gap-2 text-sm md:text-base">
-                        <div className="flex items-center gap-2">
-                          <Crown className="h-4 w-4 text-blue-600" />
-                          <span>Mentor</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="student" className="flex items-center gap-2 text-sm md:text-base">
-                        <div className="flex items-center gap-2">
-                          <BookOpen className="h-4 w-4 text-purple-600" />
-                          <span>Aluno</span>
-                        </div>
-                      </SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                
-                {formData.userType === "admin" && (
-                  <p className="text-xs text-red-600 mt-1">
-                    Como administrador, você terá acesso total ao sistema.
-                  </p>
-                )}
-                
-                {formData.userType === "mentor" && (
-                  <p className="text-xs text-blue-600 mt-1">
-                    Como mentor, você poderá criar e gerenciar mentorias e quizzes.
-                  </p>
-                )}
-                
-                {formData.userType === "student" && (
-                  <p className="text-xs text-purple-600 mt-1">
-                    Como aluno, você terá acesso a mentorias e ferramentas de aprendizado.
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  required
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="!border !border-gray-300 !bg-white !px-3 !py-2 !rounded-md !w-full !text-black !outline-none focus:!border-blue-500 focus:!ring-1 focus:!ring-blue-500"
-                  style={{ 
-                    pointerEvents: 'auto',
-                    userSelect: 'text',
-                    cursor: 'text'
-                  }}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm">Senha</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="!border !border-gray-300 !bg-white !px-3 !py-2 !rounded-md !w-full !text-black !outline-none focus:!border-blue-500 focus:!ring-1 focus:!ring-blue-500"
-                  style={{ 
-                    pointerEvents: 'auto',
-                    userSelect: 'text',
-                    cursor: 'text'
-                  }}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-sm">Confirme a senha</Label>
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className="!border !border-gray-300 !bg-white !px-3 !py-2 !rounded-md !w-full !text-black !outline-none focus:!border-blue-500 focus:!ring-1 focus:!ring-blue-500"
-                  style={{ 
-                    pointerEvents: 'auto',
-                    userSelect: 'text',
-                    cursor: 'text'
-                  }}
-                />
-                {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                  <p className="text-xs text-red-500 mt-1">As senhas não coincidem</p>
-                )}
-              </div>
-              
-              <div className="flex items-start space-x-2 mt-3">
-                <Checkbox 
-                  id="terms" 
-                  name="agreeTerms"
-                  checked={formData.agreeTerms}
-                  onCheckedChange={(checked) => 
-                    setFormData(prev => ({ ...prev, agreeTerms: checked === true }))
-                  }
-                  className="mt-0.5"
-                />
-                <label
-                  htmlFor="terms"
-                  className="text-xs md:text-sm font-medium leading-tight peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Li e concordo com os{" "}
-                  <a href="#" className="text-blue-600 hover:underline">
-                    Termos de Uso
-                  </a>
-                </label>
-              </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 h-9 md:h-10 mt-4 text-sm md:text-base"
-                disabled={isLoading || !formData.agreeTerms || formData.password !== formData.confirmPassword || !formData.userType}
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <span>Criando conta e fazendo login...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center">
-                    <span>Finalizar Cadastro</span>
-                    <ArrowRight className="ml-2 h-3.5 w-3.5 md:h-4 md:w-4" />
-                  </div>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-          
-          <CardFooter className="flex flex-col space-y-4 pt-0 p-4 pb-6 md:p-6">
-            <div className="text-center text-xs md:text-sm">
-              Já possui uma conta?{" "}
-              <a 
-                href="/auth/login" 
-                className="text-blue-600 hover:underline font-medium"
-              >
-                Faça login
-              </a>
-            </div>
-          </CardFooter>
-        </Card>
-      </motion.div>
     </div>
   );
 }

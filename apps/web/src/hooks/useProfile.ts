@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { createSupabaseClient } from '@/lib/supabase'
 import { useAuth } from '@/components/auth/AuthProvider'
 
 interface UserProfile {
@@ -15,7 +14,6 @@ export function useProfile() {
   const { user } = useAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createSupabaseClient()
 
   useEffect(() => {
     if (user) {
@@ -30,61 +28,18 @@ export function useProfile() {
     if (!user) return
 
     try {
-      // Primeiro tentar carregar do banco
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Erro ao carregar perfil:', error)
+      // Por enquanto, usando dados do usuário logado
+      const userProfile: UserProfile = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        userType: user.userType
       }
-
-      if (data) {
-        setProfile(data)
-      } else {
-        // Se não existe, criar perfil com dados do localStorage (temporário)
-        const userType = localStorage.getItem('userType') || 'student'
-        const newProfile = {
-          id: user.id,
-          email: user.email!,
-          name: user.user_metadata?.name || user.email!.split('@')[0],
-          userType: userType as 'mentor' | 'student'
-        }
-        
-        await createProfile(newProfile)
-      }
+      setProfile(userProfile)
     } catch (error) {
-      console.error('Erro ao gerenciar perfil:', error)
+      console.error('Erro ao carregar perfil:', error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const createProfile = async (profileData: Omit<UserProfile, 'avatar' | 'bio'>) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .insert([{
-          id: profileData.id,
-          email: profileData.email,
-          name: profileData.name,
-          userType: profileData.userType
-        }])
-        .select()
-        .single()
-
-      if (error) {
-        console.error('Erro ao criar perfil:', error)
-        // Se erro, usar dados locais
-        setProfile(profileData)
-      } else {
-        setProfile(data)
-      }
-    } catch (error) {
-      console.error('Erro ao criar perfil:', error)
-      setProfile(profileData)
     }
   }
 
@@ -92,18 +47,8 @@ export function useProfile() {
     if (!user || !profile) return
 
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
-        .select()
-        .single()
-
-      if (error) {
-        console.error('Erro ao atualizar perfil:', error)
-      } else {
-        setProfile(data)
-      }
+      // Por enquanto, apenas atualiza localmente
+      setProfile({ ...profile, ...updates })
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error)
     }

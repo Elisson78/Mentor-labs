@@ -1,75 +1,51 @@
 'use client'
 
 import { useState } from 'react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useAuth } from './AuthProvider'
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
-  
-  const supabase = createSupabaseClient()
+  const [error, setError] = useState('')
+  const router = useRouter()
+  const { login } = useAuth()
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setMessage('')
+    setError('')
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (error) {
-        setMessage(error.message)
+      const user = await login(email, password)
+      if (user) {
+        router.push('/dashboard')
       } else {
-        setMessage('Login realizado com sucesso!')
-        // Redirect will happen automatically via AuthProvider
+        setError('Email ou senha inválidos')
       }
     } catch (error) {
-      setMessage('Erro inesperado ao fazer login')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setMessage('')
-
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      })
-
-      if (error) {
-        setMessage(error.message)
-      } else {
-        setMessage('Verifique seu email para confirmar a conta!')
-      }
-    } catch (error) {
-      setMessage('Erro inesperado ao criar conta')
+      setError('Erro ao fazer login. Tente novamente.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Login / Cadastro</CardTitle>
+        <CardTitle>Login</CardTitle>
+        <CardDescription>
+          Entre com suas credenciais para acessar o sistema
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
@@ -77,10 +53,9 @@ export default function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              disabled={loading}
             />
           </div>
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="password">Senha</Label>
             <Input
               id="password"
@@ -88,28 +63,14 @@ export default function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              disabled={loading}
             />
           </div>
-          <div className="flex gap-2">
-            <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? 'Carregando...' : 'Entrar'}
-            </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handleSignUp}
-              disabled={loading}
-              className="flex-1"
-            >
-              Cadastrar
-            </Button>
-          </div>
-          {message && (
-            <p className={`text-sm ${message.includes('sucesso') || message.includes('email') ? 'text-green-600' : 'text-red-600'}`}>
-              {message}
-            </p>
+          {error && (
+            <div className="text-red-500 text-sm">{error}</div>
           )}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Entrando...' : 'Entrar'}
+          </Button>
         </form>
       </CardContent>
     </Card>
