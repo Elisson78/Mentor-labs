@@ -90,6 +90,8 @@ export const register = async (email: string, password: string, name: string, us
       userType
     };
     
+    console.log('Registrando usuário:', user);
+    
     // Salvar no "banco de dados"
     users[user.id] = user;
     saveUsers(users);
@@ -98,4 +100,12 @@ export const register = async (email: string, password: string, name: string, us
     return user;
   }
   return null;
+};
+
+// Função para limpar todos os dados (útil para testes)
+export const clearAllData = () => {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(USERS_KEY);
+  localStorage.removeItem(CURRENT_USER_KEY);
+  console.log('Todos os dados de autenticação foram limpos');
 };

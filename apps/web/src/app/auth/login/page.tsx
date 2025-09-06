@@ -37,12 +37,15 @@ export default function LoginPage() {
         console.log("✅ Login realizado com sucesso:", user.email);
         toast.success("Login realizado com sucesso!");
         
-        // Redirecionar baseado no tipo de usuário
-        if (user.userType === 'mentor') {
-          router.push('/dashboard');
-        } else {
-          router.push('/aluno_dashboard');
-        }
+        // Aguardar um pouco e redirecionar baseado no tipo de usuário
+        setTimeout(() => {
+          console.log('Redirecionando usuário:', user.userType);
+          if (user.userType === 'mentor') {
+            router.push('/dashboard');
+          } else {
+            router.push('/aluno_dashboard');
+          }
+        }, 1000);
       } else {
         toast.error("Email ou senha inválidos");
       }
