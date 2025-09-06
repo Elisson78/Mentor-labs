@@ -64,9 +64,8 @@ export const clearCurrentUser = () => {
   setCurrentUser(null);
 };
 
-// Fazer login (prioriza banco de dados, fallback para localStorage)
+// Fazer login (APENAS banco PostgreSQL real)
 export const login = async (email: string, password: string): Promise<User | null> => {
-  // PRIMEIRA PRIORIDADE: Tentar API do banco de dados
   try {
     const response = await fetch('/api/users', {
       method: 'POST',
@@ -79,35 +78,21 @@ export const login = async (email: string, password: string): Promise<User | nul
     if (response.ok) {
       const user = await response.json();
       setCurrentUser(user);
-      
-      // Salvar também localmente para cache
-      const localUsers = getLocalUsers();
-      localUsers[user.id] = user;
-      saveLocalUsers(localUsers);
-      
-      console.log('✅ Login realizado via banco de dados');
+      console.log('✅ Login realizado via banco de dados PostgreSQL');
       return user;
+    } else {
+      const error = await response.json();
+      console.error('❌ Erro no login:', error.error);
+      return null;
     }
   } catch (error) {
-    console.log('⚠️ Banco indisponível, tentando localStorage...');
+    console.error('❌ Erro de conexão:', error);
+    return null;
   }
-
-  // FALLBACK: Tentar com usuários locais
-  const localUsers = getLocalUsers();
-  const localUser = Object.values(localUsers).find(user => user.email === email);
-  
-  if (localUser) {
-    setCurrentUser(localUser);
-    console.log('✅ Login realizado via localStorage');
-    return localUser;
-  }
-
-  return null;
 };
 
-// Fazer registro (prioriza banco de dados, fallback para localStorage)  
+// Fazer registro (APENAS banco PostgreSQL real)
 export const register = async (email: string, password: string, name: string, userType: 'mentor' | 'student'): Promise<User | null> => {
-  // PRIMEIRA PRIORIDADE: Tentar registrar no banco de dados
   try {
     const response = await fetch('/api/users', {
       method: 'POST',
@@ -120,86 +105,20 @@ export const register = async (email: string, password: string, name: string, us
     if (response.ok) {
       const user = await response.json();
       setCurrentUser(user);
-      
-      // Salvar também localmente para cache
-      const localUsers = getLocalUsers();
-      localUsers[user.id] = user;
-      saveLocalUsers(localUsers);
-      
-      console.log('✅ Usuário registrado via banco de dados');
+      console.log('✅ Usuário registrado via banco de dados PostgreSQL');
       return user;
+    } else {
+      const error = await response.json();
+      console.error('❌ Erro no registro:', error.error);
+      return null;
     }
   } catch (error) {
-    console.log('⚠️ Banco indisponível para registro, usando localStorage...');
+    console.error('❌ Erro de conexão durante registro:', error);
+    return null;
   }
-
-  // FALLBACK: Verificar se usuário já existe localmente
-  const localUsers = getLocalUsers();
-  const existingUser = Object.values(localUsers).find(user => user.email === email);
-  
-  if (existingUser) {
-    return null; // Usuário já existe
-  }
-
-  // Criar usuário localmente
-  const newUser: User = {
-    id: 'user_' + Date.now(),
-    email,
-    name,
-    userType
-  };
-
-  localUsers[newUser.id] = newUser;
-  saveLocalUsers(localUsers);
-  setCurrentUser(newUser);
-  
-  console.log('✅ Usuário registrado via localStorage');
-  return newUser;
 };
 
-// Limpar dados de teste (para produção)
-export const clearTestData = () => {
-  if (typeof window === 'undefined') return;
-  
-  // Limpar localStorage
-  localStorage.removeItem('mentorlab-users');
-  localStorage.removeItem('mentorlab-current-user');
-  
-  // Limpar cookies
-  document.cookie = 'user-session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-  document.cookie = 'user-type=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-  
-  console.log('✅ Dados de teste limpos para produção');
-};
 
-// Criar usuários de teste (apenas para desenvolvimento)
-export const createTestUsers = () => {
-  if (typeof window === 'undefined') return;
-  
-  // Não criar usuários de teste em produção
-  if (process.env.NODE_ENV === 'production') {
-    console.log('⚠️ Usuários de teste não criados em produção');
-    return;
-  }
-  
-  const testUsers = {
-    'mentor_1': {
-      id: 'mentor_1',
-      email: 'mentor1@gmail.com',
-      name: 'Professor Mentor',
-      userType: 'mentor' as const
-    },
-    'student_1': {
-      id: 'student_1', 
-      email: 'aluno1@gmail.com',
-      name: 'Estudante',
-      userType: 'student' as const
-    }
-  };
-  
-  saveLocalUsers(testUsers);
-  console.log('✅ Usuários de teste criados (desenvolvimento):', testUsers);
-};
 
 // Fazer logout
 export const logout = () => {

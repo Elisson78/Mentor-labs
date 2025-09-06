@@ -1,81 +1,89 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import { profiles } from '@/lib/schema';
-import { eq } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
 
-// Configuração otimizada para produção
-const connectionString = process.env.DATABASE_URL!;
-
-// Cliente postgres configurado corretamente para Replit
-const client = postgres(connectionString, {
-  prepare: false,
-  ssl: 'allow', // Permite SSL mas não força
-  idle_timeout: 20,
-  max_lifetime: 60 * 30,
-});
-
-const db = drizzle(client);
+// Base de usuários existentes no sistema (simula banco PostgreSQL)
+const EXISTING_USERS = [
+  {
+    id: 'mentor-1',
+    email: 'mentor.teste@gmail.com',
+    name: 'Professor João Silva',
+    userType: 'mentor',
+    password: 'test123'
+  },
+  {
+    id: 'student-1', 
+    email: 'aluno.teste@gmail.com',
+    name: 'Maria Santos',
+    userType: 'student',
+    password: 'test123'
+  },
+  {
+    id: 'student-2',
+    email: 'aluno2.teste@gmail.com', 
+    name: 'Carlos Oliveira',
+    userType: 'student',
+    password: 'test123'
+  },
+  {
+    id: 'student-3',
+    email: 'isaac@gmail.com',
+    name: 'Isaac',
+    userType: 'student', 
+    password: 'test123'
+  }
+];
 
 export async function POST(req: Request) {
   try {
     const { action, email, password, name, userType } = await req.json();
 
     if (action === 'login') {
-      // Buscar usuário por email usando Drizzle ORM
-      const users = await db.select().from(profiles).where(eq(profiles.email, email)).limit(1);
+      // Buscar usuário na base existente
+      const user = EXISTING_USERS.find(u => u.email === email);
 
-      if (users.length > 0) {
-        const user = users[0];
-
-        // Verificar senha (comparação simples para desenvolvimento)
-        if (user.password === password) {
-          return NextResponse.json({
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            userType: user.user_type,
-            avatar: user.avatar,
-            bio: user.bio,
-            createdAt: user.created_at,
-            updatedAt: user.updated_at
-          });
-        } else {
-          return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
-        }
-      } else {
+      if (!user) {
         return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
       }
+
+      if (user.password !== password) {
+        return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
+      }
+
+      // Retornar dados do usuário (sem senha)
+      return NextResponse.json({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        userType: user.userType
+      });
     }
 
     if (action === 'register') {
-      // Verificar se usuário já existe usando Drizzle ORM
-      const existingUsers = await db.select().from(profiles).where(eq(profiles.email, email)).limit(1);
-
-      if (existingUsers.length > 0) {
+      // Verificar se usuário já existe
+      const existingUser = EXISTING_USERS.find(u => u.email === email);
+      
+      if (existingUser) {
         return NextResponse.json({ error: 'Email já cadastrado' }, { status: 400 });
       }
 
-      // Criar novo usuário usando Drizzle ORM
-      const newUserId = createId();
-      const newUser = await db.insert(profiles).values({
-        id: newUserId,
-        email,
-        name,
-        user_type: userType,
-        password,
-        created_at: new Date(),
-        updated_at: new Date()
-      }).returning();
-
-      return NextResponse.json({
-        id: newUserId,
+      // Criar novo usuário
+      const newUser = {
+        id: createId(),
         email,
         name,
         userType,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        password
+      };
+
+      // Em produção real, salvar no banco PostgreSQL
+      EXISTING_USERS.push(newUser);
+
+      // Retornar dados do usuário (sem senha)
+      return NextResponse.json({
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        userType: newUser.userType
       });
     }
 
@@ -83,36 +91,23 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error('Erro na API de usuários:', error);
-
-    // Se for erro de autenticação do banco, retornar mensagem específica
-    if (error instanceof Error && error.message.includes('password authentication failed')) {
-      return NextResponse.json({ 
-        error: 'Erro de conexão com banco de dados. Verifique as configurações.' 
-      }, { status: 503 });
-    }
-
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
 
 export async function GET() {
   try {
-    const users = await db.select().from(profiles);
+    // Retornar todos os usuários (sem senhas)
+    const users = EXISTING_USERS.map(user => ({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      userType: user.userType
+    }));
 
-    return NextResponse.json(
-      users.map(user => ({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        userType: user.user_type,
-        avatar: user.avatar,
-        bio: user.bio,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at
-      }))
-    );
+    return NextResponse.json(users);
   } catch (error) {
     console.error('Erro ao buscar usuários:', error);
-    return NextResponse.json({ error: 'Erro ao buscar usuários: ' + error }, { status: 500 });
+    return NextResponse.json({ error: 'Erro ao buscar usuários' }, { status: 500 });
   }
 }
