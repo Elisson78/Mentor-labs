@@ -1,25 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import { profiles } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
 
-// Usar conexão otimizada para Neon/Vercel
+// Configuração otimizada para produção
 const connectionString = process.env.DATABASE_URL!;
-const sql = postgres(connectionString, {
+
+// Cliente postgres configurado corretamente para Replit
+const client = postgres(connectionString, {
   prepare: false,
-  ssl: true,
+  ssl: 'allow', // Permite SSL mas não força
   idle_timeout: 20,
   max_lifetime: 60 * 30,
 });
+
+const db = drizzle(client);
 
 export async function POST(req: Request) {
   try {
     const { action, email, password, name, userType } = await req.json();
 
     if (action === 'login') {
-      // Buscar usuário por email usando SQL direto
-      const users = await sql`
-        SELECT * FROM profiles WHERE email = ${email}
-      `;
+      // Buscar usuário por email usando Drizzle ORM
+      const users = await db.select().from(profiles).where(eq(profiles.email, email)).limit(1);
 
       if (users.length > 0) {
         const user = users[0];
@@ -45,21 +50,24 @@ export async function POST(req: Request) {
     }
 
     if (action === 'register') {
-      // Verificar se usuário já existe usando SQL direto
-      const existingUsers = await sql`
-        SELECT * FROM profiles WHERE email = ${email}
-      `;
+      // Verificar se usuário já existe usando Drizzle ORM
+      const existingUsers = await db.select().from(profiles).where(eq(profiles.email, email)).limit(1);
 
       if (existingUsers.length > 0) {
         return NextResponse.json({ error: 'Email já cadastrado' }, { status: 400 });
       }
 
-      // Criar novo usuário usando SQL direto
+      // Criar novo usuário usando Drizzle ORM
       const newUserId = createId();
-      await sql`
-        INSERT INTO profiles (id, email, name, user_type, password, created_at, updated_at)
-        VALUES (${newUserId}, ${email}, ${name}, ${userType}, ${password}, NOW(), NOW())
-      `;
+      const newUser = await db.insert(profiles).values({
+        id: newUserId,
+        email,
+        name,
+        user_type: userType,
+        password,
+        created_at: new Date(),
+        updated_at: new Date()
+      }).returning();
 
       return NextResponse.json({
         id: newUserId,
