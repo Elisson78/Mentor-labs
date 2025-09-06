@@ -1,94 +1,116 @@
+# Mentor Labs v2
 
-# 🎓 Mentor Labs - Plataforma de Mentorias com IA
+Uma plataforma abrangente de gamificação educacional que conecta mentores e estudantes através de ferramentas alimentadas por IA e experiências de aprendizado interativas.
 
-Plataforma educacional gamificada que conecta mentores e alunos, com geração automática de quizzes através de IA e análise de vídeos.
+## 🚀 Funcionalidades
 
-## 🚀 Tecnologias
+### Para Mentores
+- **Dashboard Personalizado**: Interface intuitiva para gerenciar conteúdo e acompanhar alunos
+- **Criação de Mentorias**: Sistema completo para criar e organizar programas de mentoria
+- **Geração Automática de Quizzes**: IA analisa vídeos do YouTube/Vimeo e gera questionários automaticamente
+- **Acompanhamento de Progresso**: Visualização detalhada do desempenho dos alunos
 
-- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes, tRPC
-- **Database**: PostgreSQL (Replit Database)
-- **ORM**: Drizzle ORM
-- **IA**: OpenAI/OpenRouter
-- **Autenticação**: Sistema personalizado para Replit
+### Para Estudantes
+- **Dashboard Gamificado**: Sistema de XP, níveis, conquistas e trilhas de aprendizado
+- **Aprendizado Interativo**: Quizzes inteligentes com feedback personalizado
+- **Trilhas de Progresso**: Mapa visual de aprendizado com níveis desbloqueáveis
+- **Sistema de Recompensas**: Badges e marcos de celebração do progresso
 
-## 📋 Configuração no Replit
+## 🛠 Tecnologias
 
-### 1. Configure o PostgreSQL Database
-1. No Replit, vá para a aba "Database" 
-2. Clique em "Create a database"
-3. O `DATABASE_URL` será configurado automaticamente
+### Frontend
+- **Next.js 15** com React 19 e TypeScript
+- **TailwindCSS** com shadcn/ui para design system
+- **Framer Motion** para animações suaves
+- **Autenticação customizada** otimizada para Replit
 
-### 2. Configure as Variáveis de Ambiente
-Copie `.env.example` para `.env` e configure:
+### Backend
+- **Next.js API Routes** com tRPC para APIs type-safe
+- **PostgreSQL** com Drizzle ORM
+- **Sistema de sessões** baseado em cookies e localStorage
 
-```bash
-# OpenAI/OpenRouter (obrigatório para funcionalidades de IA)
-OPENAI_API_KEY=sua_chave_aqui
-OPENAI_BASE_URL=https://openrouter.ai/api/v1
+### Inteligência Artificial
+- **OpenAI/OpenRouter API** para análise de vídeos e geração de conteúdo
+- **Google AI SDK** como alternativa para geração de conteúdo
+- **AI SDK React** para interfaces de chat streaming
 
-# URLs (ajuste com sua URL do Repl)
-NEXT_PUBLIC_API_URL=https://seu-repl.replit.dev
-NEXT_PUBLIC_WEB_URL=https://seu-repl.replit.dev
+## 🏗 Arquitetura
+
+```
+mentor-labs-v2/
+├── apps/
+│   └── web/                 # Aplicação Next.js
+│       ├── src/
+│       │   ├── app/         # App Router (páginas)
+│       │   ├── components/  # Componentes React
+│       │   ├── lib/         # Utilitários e configurações
+│       │   └── styles/      # Estilos globais
+└── shared/                  # Código compartilhado (schemas, tipos)
 ```
 
-### 3. Instale Dependências
+## 🔧 Como Executar
+
+### Desenvolvimento
 ```bash
 npm install
+npm run dev:web
 ```
 
-### 4. Configure o Banco de Dados
+### Produção
 ```bash
-node scripts/setup-database.js
+npm run build
+npm run start
 ```
 
-### 5. Execute o Projeto
-```bash
-npm run dev
+## 🗄 Banco de Dados
+
+O projeto usa PostgreSQL com Drizzle ORM. A tabela principal:
+
+```sql
+CREATE TABLE profiles (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  user_type TEXT NOT NULL, -- 'mentor' ou 'student'
+  password TEXT NOT NULL,
+  avatar TEXT,
+  bio TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
 ```
 
-## 🎮 Funcionalidades
+## 🔐 Autenticação
 
-### Para Mentores:
-- ✅ Dashboard personalizado
-- ✅ Criação de quizzes com IA
-- ✅ Análise automática de vídeos
-- ✅ Gestão de alunos
-- ✅ Mentorias com IA
+Sistema de autenticação customizado com:
+- Sessões baseadas em cookies para middleware
+- localStorage para persistência no cliente
+- Redirecionamento automático baseado em roles (mentor/student)
+- Sistema de fallback robusto
 
-### Para Alunos:
-- ✅ Dashboard gamificado
-- ✅ Mapa de progresso interativo
-- ✅ Quizzes gamificados
-- ✅ Sistema de conquistas
-- ✅ Trilhas de aprendizado
+## 🎮 Sistema de Gamificação
 
-## 🎯 Como Usar
+- **XP e Níveis**: Sistema progressivo de experiência
+- **Conquistas**: Badges desbloqueáveis por marcos
+- **Trilhas de Aprendizado**: Mapa visual com progresso
+- **Recompensas**: Sistema de feedback positivo
 
-1. **Registro**: Acesse `/auth/register` e crie sua conta
-2. **Login**: Entre em `/auth/login`
-3. **Dashboard**: Será redirecionado automaticamente baseado no seu tipo de usuário
-4. **Explore**: Todas as funcionalidades estão disponíveis nos menus laterais
+## 🌐 Deploy
 
-## 📱 Responsivo
+Configurado para deploy no Replit com:
+- **Tipo**: Autoscale (ideal para websites)
+- **Build**: `npm run build`
+- **Start**: `npm start`
 
-A aplicação está totalmente otimizada para mobile e desktop.
+## 📊 Status do Projeto
 
-## 🔧 Scripts Disponíveis
+✅ Sistema de autenticação funcional  
+✅ Dashboard para mentores completo  
+✅ Dashboard gamificado para estudantes  
+✅ Integração com IA para geração de quizzes  
+✅ Sistema de banco de dados PostgreSQL  
+✅ Deploy configurado para produção  
 
-```bash
-npm run dev          # Inicia ambiente de desenvolvimento
-npm run build        # Build para produção
-npm run dev:web      # Inicia apenas o frontend
-npm run dev:server   # Inicia apenas o backend
-npm run check-types  # Verifica tipos TypeScript
-```
+## 🤝 Contribuição
 
-## 🌟 Deploy no Replit
-
-A aplicação está configurada para rodar nativamente no Replit. Basta clicar no botão "Run" após a configuração inicial.
-
----
-
-**Desenvolvido para o Replit** 🚀
-# mentor-labs-v2
+Este projeto é um MVP funcional com todas as funcionalidades principais implementadas e testadas.

@@ -1,0 +1,29 @@
+COMANDOS PARA ENVIAR O PROJETO PARA O GITHUB:
+
+1. Execute estes comandos no Shell do Replit (na ordem):
+
+git add .
+git commit -m "Versão funcional completa - Sistema de autenticação, dashboards e integração IA"
+git branch -M main
+git remote add origin https://github.com/Elisson78/mentor-labs-v2.git
+git push -u origin main
+
+2. Se der erro de "remote origin already exists", execute:
+
+git remote remove origin
+git remote add origin https://github.com/Elisson78/mentor-labs-v2.git
+git push -u origin main
+
+3. Se pedir credenciais do GitHub:
+   - Username: seu username do GitHub
+   - Password: use um Personal Access Token (não a senha normal)
+
+ARQUIVOS PRINCIPAIS DO PROJETO:
+✅ README.md - Documentação completa
+✅ Sistema de autenticação funcional
+✅ Dashboard para mentores
+✅ Dashboard gamificado para estudantes  
+✅ API com PostgreSQL + fallback
+✅ Configuração de deploy para produção
+
+O projeto está completamente funcional e pronto para uso!

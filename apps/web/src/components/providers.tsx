@@ -1,14 +1,10 @@
 
-"use client";
+'use client'
 
-import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/components/auth/AuthProvider";
+import { AuthProvider } from '@/components/auth/AuthProvider'
+import { ThemeProvider } from '@/components/theme-provider'
 
-interface ProvidersProps {
-  children: React.ReactNode;
-}
-
-export default function Providers({ children }: ProvidersProps) {
+export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider
       attribute="class"
@@ -20,5 +16,5 @@ export default function Providers({ children }: ProvidersProps) {
         {children}
       </AuthProvider>
     </ThemeProvider>
-  );
+  )
 }
