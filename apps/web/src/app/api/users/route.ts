@@ -83,7 +83,7 @@ export async function POST(req: Request) {
         });
 
       } catch (error) {
-        console.error('❌ Erro PostgreSQL, usando fallback:', error.message);
+        console.error('❌ Erro PostgreSQL, usando fallback:', error instanceof Error ? error.message : String(error));
         
         // Em caso de erro, usar fallback
         const fallbackUser = FALLBACK_USERS.find(u => u.email === email);
