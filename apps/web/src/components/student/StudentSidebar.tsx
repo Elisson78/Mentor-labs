@@ -36,7 +36,7 @@ function UserInfo() {
     );
   }
 
-  const displayName = user.user_metadata?.name || 
+  const displayName = user.name || 
                      user.email?.split('@')[0]?.toUpperCase() || 
                      'USUÁRIO';
   

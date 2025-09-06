@@ -11,7 +11,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 function DynamicGreeting() {
   const { user } = useAuth();
   
-  const displayName = user?.user_metadata?.name || 
+  const displayName = user?.name || 
                      user?.email?.split('@')[0]?.toUpperCase() || 
                      'USUÁRIO';
   

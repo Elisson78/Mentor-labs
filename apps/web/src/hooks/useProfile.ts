@@ -5,7 +5,7 @@ interface UserProfile {
   id: string
   email: string
   name: string
-  userType: 'mentor' | 'student'
+  userType: 'mentor' | 'student' | 'admin'
   avatar?: string
   bio?: string
 }
