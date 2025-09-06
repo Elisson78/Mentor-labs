@@ -1,14 +1,18 @@
 
-'use client'
+"use client";
 
-import { ThemeProvider } from 'next-themes'
-import { AuthProvider } from './auth/AuthProvider'
+import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+interface ProvidersProps {
+  children: React.ReactNode;
+}
+
+export default function Providers({ children }: ProvidersProps) {
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="light"
+      defaultTheme="system"
       enableSystem
       disableTransitionOnChange
     >
@@ -16,5 +20,5 @@ export function Providers({ children }: { children: React.ReactNode }) {
         {children}
       </AuthProvider>
     </ThemeProvider>
-  )
+  );
 }
