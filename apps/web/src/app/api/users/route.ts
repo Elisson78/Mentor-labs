@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createId } from '@paralleldrive/cuid2';
+import { randomUUID } from 'crypto';
 import { db } from '@/lib/db';
 import { profiles } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
@@ -120,6 +120,7 @@ export async function POST(req: Request) {
         // Criar novo usuário no banco PostgreSQL
         const [newUser] = await db.insert(profiles)
           .values({
+            id: `user_${Date.now()}`,
             email,
             name,
             user_type: userType,
