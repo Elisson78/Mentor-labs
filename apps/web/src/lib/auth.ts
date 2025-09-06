@@ -41,20 +41,26 @@ const setCurrentUser = (user: User | null) => {
 };
 
 export const login = async (email: string, password: string): Promise<User | null> => {
+  console.log('🔍 Tentando login para:', email);
+  
   if (email && password) {
     const users = getUsers();
+    console.log('👥 Usuários disponíveis:', users);
     
     // Procurar usuário existente pelo email
     const existingUser = Object.values(users).find(user => user.email === email);
+    console.log('🔍 Usuário encontrado:', existingUser);
     
     if (existingUser) {
       setCurrentUser(existingUser);
+      console.log('✅ Login bem-sucedido, usuário logado:', existingUser);
       return existingUser;
     } else {
-      // Se não encontrar usuário, retornar null (forçar novo cadastro)
+      console.log('❌ Usuário não encontrado');
       return null;
     }
   }
+  console.log('❌ Email ou senha vazios');
   return null;
 };
 
