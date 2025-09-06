@@ -8,10 +8,11 @@ export const profiles = pgTable('profiles', {
   email: text('email').notNull().unique(),
   name: text('name').notNull(),
   user_type: text('user_type').notNull(), // 'mentor' ou 'student'
+  password: text('password').notNull(), // Campo de senha
   avatar: text('avatar'),
   bio: text('bio'),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
 });
 
 export type Profile = typeof profiles.$inferSelect;

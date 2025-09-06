@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { profiles } from '@/lib/schema';
@@ -14,16 +15,22 @@ export async function POST(req: Request) {
 
       if (users.length > 0) {
         const user = users[0];
-        return NextResponse.json({
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          userType: user.user_type,
-          avatar: user.avatar,
-          bio: user.bio,
-          createdAt: user.created_at,
-          updatedAt: user.updated_at
-        });
+        
+        // Verificar senha (comparação simples para desenvolvimento)
+        if (user.password === password) {
+          return NextResponse.json({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            userType: user.user_type,
+            avatar: user.avatar,
+            bio: user.bio,
+            createdAt: user.created_at,
+            updatedAt: user.updated_at
+          });
+        } else {
+          return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
+        }
       } else {
         return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
       }
@@ -43,6 +50,7 @@ export async function POST(req: Request) {
         email,
         name,
         user_type: userType,
+        password: password, // Armazenar senha (em produção, usar hash)
         created_at: new Date(),
         updated_at: new Date()
       };
