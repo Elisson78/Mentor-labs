@@ -1,21 +1,16 @@
+
 {
-  "name": "teste",
+  "name": "mentor-labs-replit",
   "private": true,
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/*"
   ],
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "check-types": "turbo check-types",
-    "dev:native": "turbo -F native dev",
+    "dev": "turbo -F web dev",
+    "build": "turbo -F web build",
+    "start": "turbo -F web start",
+    "check-types": "turbo -F web check-types",
     "dev:web": "turbo -F web dev",
-    "dev:server": "turbo -F server dev",
-    "db:push": "turbo -F server db:push",
-    "db:studio": "turbo -F server db:studio",
-    "db:generate": "turbo -F server db:generate",
-    "db:migrate": "turbo -F server db:migrate",
     "start:web": "cd apps/web && npm run build && npm run start"
   },
   "dependencies": {
