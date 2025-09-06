@@ -1,49 +1,70 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { profiles } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
+import { createId } from '@paralleldrive/cuid-identity';
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const userData = await request.json();
-    
-    console.log('💾 Salvando usuário no banco PostgreSQL:', userData);
-    
-    // Verificar se usuário já existe
-    const existingUser = await db
-      .select()
-      .from(profiles)
-      .where(eq(profiles.email, userData.email))
-      .limit(1);
-    
-    if (existingUser.length > 0) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Usuário já existe com este email' 
-      }, { status: 400 });
+    console.log('📝 Criando usuário via API...');
+    const { email, name, userType } = await req.json();
+
+    if (!email || !name || !userType) {
+      return NextResponse.json({ error: 'Dados obrigatórios: email, name, userType' }, { status: 400 });
     }
-    
-    // Inserir novo usuário no banco
-    const [newUser] = await db.insert(profiles).values({
-      email: userData.email,
-      name: userData.name,
-      userType: userData.userType
-    }).returning();
-    
-    console.log('✅ Usuário salvo no PostgreSQL:', newUser);
-    
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Usuário salvo no banco de dados PostgreSQL',
-      user: newUser 
-    });
-    
+
+    console.log('📝 Dados do usuário:', { email, name, userType });
+
+    // Verificar se usuário já existe
+    try {
+      const existingUser = await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.email, email))
+        .limit(1);
+
+      if (existingUser.length > 0) {
+        console.log('⚠️ Usuário já existe:', existingUser[0]);
+        return NextResponse.json({ 
+          success: true,
+          user: existingUser[0],
+          message: 'Usuário já existe'
+        });
+      }
+    } catch (error) {
+      console.warn('⚠️ Erro ao verificar usuário existente:', error);
+    }
+
+    // Criar novo usuário
+    try {
+      const newUser = await db
+        .insert(profiles)
+        .values({
+          id: createId(),
+          email,
+          name,
+          userType,
+          bio: null,
+          avatar: null
+        })
+        .returning();
+
+      console.log('✅ Usuário criado no banco:', newUser[0]);
+
+      return NextResponse.json({ 
+        success: true, 
+        user: newUser[0],
+        message: 'Usuário criado com sucesso'
+      });
+    } catch (dbError) {
+      console.error('❌ Erro ao inserir no banco:', dbError);
+      throw dbError;
+    }
+
   } catch (error) {
-    console.error('❌ Erro ao salvar usuário no banco:', error);
+    console.error('❌ Erro ao criar usuário:', error);
     return NextResponse.json({ 
-      success: false, 
-      error: 'Erro ao salvar no banco de dados: ' + (error as Error).message 
+      error: 'Erro interno do servidor: ' + (error as Error).message 
     }, { status: 500 });
   }
 }
@@ -52,7 +73,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const email = searchParams.get('email');
-    
+
     if (email) {
       // Buscar usuário específico por email
       const user = await db
@@ -60,22 +81,22 @@ export async function GET(request: NextRequest) {
         .from(profiles)
         .where(eq(profiles.email, email))
         .limit(1);
-      
+
       return NextResponse.json({ 
         success: true,
         user: user[0] || null
       });
     }
-    
+
     // Buscar todos os usuários
     const users = await db.select().from(profiles);
-    
+
     return NextResponse.json({ 
       success: true, 
       message: 'Usuários do banco PostgreSQL',
       users: users
     });
-    
+
   } catch (error) {
     console.error('❌ Erro ao buscar usuários:', error);
     return NextResponse.json({ 
