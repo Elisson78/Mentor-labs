@@ -1,9 +1,8 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { profiles } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
-import { createId } from '@paralleldrive/cuid2';
+import { createId } from '@cuid/cuid2';
 
 export async function POST(req: Request) {
   try {
@@ -12,7 +11,7 @@ export async function POST(req: Request) {
     if (action === 'login') {
       // Buscar usuário por email
       const users = await db.select().from(profiles).where(eq(profiles.email, email));
-      
+
       if (users.length > 0) {
         const user = users[0];
         return NextResponse.json({
@@ -29,11 +28,11 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
       }
     } 
-    
+
     if (action === 'register') {
       // Verificar se usuário já existe
       const existingUsers = await db.select().from(profiles).where(eq(profiles.email, email));
-      
+
       if (existingUsers.length > 0) {
         return NextResponse.json({ error: 'Email já cadastrado' }, { status: 400 });
       }
@@ -61,7 +60,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ error: 'Ação não reconhecida' }, { status: 400 });
-    
+
   } catch (error) {
     console.error('Erro na API de usuários:', error);
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
@@ -71,7 +70,7 @@ export async function POST(req: Request) {
 export async function GET() {
   try {
     const users = await db.select().from(profiles);
-    
+
     return NextResponse.json(
       users.map(user => ({
         id: user.id,
