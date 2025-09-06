@@ -7,7 +7,7 @@ export const profiles = pgTable('profiles', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
   email: text('email').notNull().unique(),
   name: text('name').notNull(),
-  userType: text('user_type').notNull(), // 'mentor' ou 'student'
+  user_type: text('user_type').notNull(), // 'mentor' ou 'student'
   avatar: text('avatar'),
   bio: text('bio'),
   createdAt: timestamp('created_at').defaultNow(),
