@@ -1,9 +1,9 @@
 import { pgTable, text, integer, real, timestamp, boolean, uuid } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 
-// Tabela de perfis de usuário (sincronizada com Supabase Auth)
+// Tabela de perfis de usuário (para Replit Auth)
 export const profiles = pgTable('profiles', {
-  id: uuid('id').primaryKey(), // UUID do Supabase Auth
+  id: text('id').primaryKey().$defaultFn(() => createId()), // ID gerado pelo sistema
   email: text('email').notNull().unique(),
   name: text('name').notNull(),
   userType: text('user_type').notNull(), // 'mentor' ou 'student'
