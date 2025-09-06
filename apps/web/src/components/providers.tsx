@@ -1,21 +1,19 @@
 
 'use client'
 
-import { Toaster } from "@/components/ui/sonner"
-import { AuthProvider } from "@/components/auth/AuthProvider"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from 'next-themes'
+import { AuthProvider } from './auth/AuthProvider'
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="system"
+      defaultTheme="light"
       enableSystem
       disableTransitionOnChange
     >
       <AuthProvider>
         {children}
-        <Toaster />
       </AuthProvider>
     </ThemeProvider>
   )
