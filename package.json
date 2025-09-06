@@ -18,7 +18,10 @@
     "db:migrate": "turbo -F server db:migrate"
   },
   "dependencies": {
-    "pg": "^8.16.3"
+    "@paralleldrive/cuid2": "^2.2.2",
+    "drizzle-orm": "^0.44.5",
+    "pg": "^8.16.3",
+    "postgres": "^3.4.7"
   },
   "devDependencies": {
     "turbo": "^2.5.4"

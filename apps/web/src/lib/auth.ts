@@ -48,14 +48,41 @@ const setCurrentUser = (user: User | null) => {
 
 export const login = async (email: string, password: string): Promise<User | null> => {
   if (email && password) {
+    // Primeiro, verificar no localStorage (cache)
     const users = getUsers();
+    const localUser = Object.values(users).find(user => user.email === email);
     
-    // Procurar usuário existente pelo email
-    const existingUser = Object.values(users).find(user => user.email === email);
+    // Tentar buscar no banco de dados
+    try {
+      const response = await fetch(`/api/users?email=${encodeURIComponent(email)}`);
+      const data = await response.json();
+      
+      if (data.success && data.user) {
+        // Usuário encontrado no banco - converter para formato local
+        const dbUser: User = {
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.name,
+          userType: data.user.userType
+        };
+        
+        // Sincronizar com localStorage
+        users[dbUser.id] = dbUser;
+        saveUsers(users);
+        setCurrentUser(dbUser);
+        
+        console.log('✅ Login via banco de dados:', dbUser);
+        return dbUser;
+      }
+    } catch (error) {
+      console.error('❌ Erro ao buscar no banco, tentando localStorage:', error);
+    }
     
-    if (existingUser) {
-      setCurrentUser(existingUser);
-      return existingUser;
+    // Fallback para localStorage se banco não funcionar
+    if (localUser) {
+      setCurrentUser(localUser);
+      console.log('✅ Login via localStorage:', localUser);
+      return localUser;
     }
   }
   return null;
