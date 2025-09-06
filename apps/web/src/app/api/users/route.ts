@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { profiles } from '@/lib/schema';
@@ -15,7 +14,7 @@ export async function POST(req: Request) {
 
       if (users.length > 0) {
         const user = users[0];
-        
+
         // Verificar senha (comparação simples para desenvolvimento)
         if (user.password === password) {
           return NextResponse.json({
@@ -71,14 +70,14 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error('Erro na API de usuários:', error);
-    
+
     // Se for erro de autenticação do banco, retornar mensagem específica
     if (error instanceof Error && error.message.includes('password authentication failed')) {
       return NextResponse.json({ 
         error: 'Erro de conexão com banco de dados. Verifique as configurações.' 
       }, { status: 503 });
     }
-    
+
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
