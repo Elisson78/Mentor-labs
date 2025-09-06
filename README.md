@@ -114,3 +114,4 @@ Configurado para deploy no Replit com:
 ## 🤝 Contribuição
 
 Este projeto é um MVP funcional com todas as funcionalidades principais implementadas e testadas.
+# mentor-labs-v2
