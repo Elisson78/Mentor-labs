@@ -2,18 +2,24 @@
 const { drizzle } = require('drizzle-orm/postgres-js');
 const postgres = require('postgres');
 
-// Configuração da conexão com PostgreSQL
-const connectionString = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_ysPaE1qfCOlh@ep-withered-wood-a2w8bx90.eu-central-1.aws.neon.tech/neondb?sslmode=require";
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error('❌ DATABASE_URL não está configurado');
+  process.exit(1);
+}
 
 const sql = postgres(connectionString, {
   max: 20,
+  idle_timeout: 20,
+  connect_timeout: 60,
 });
 
 async function setupDatabase() {
   try {
     console.log('🔄 Configurando banco de dados...');
     
-    // Criar tabela profiles se não existir
+    // Criar tabela profiles
     await sql`
       CREATE TABLE IF NOT EXISTS profiles (
         id TEXT PRIMARY KEY,
@@ -26,10 +32,9 @@ async function setupDatabase() {
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `;
-    
     console.log('✅ Tabela profiles criada/verificada');
     
-    // Criar tabela quizzes se não existir
+    // Criar tabela quizzes
     await sql`
       CREATE TABLE IF NOT EXISTS quizzes (
         id TEXT PRIMARY KEY,
@@ -50,17 +55,16 @@ async function setupDatabase() {
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `;
-    
     console.log('✅ Tabela quizzes criada/verificada');
     
-    // Criar outras tabelas necessárias
+    // Criar tabela questions
     await sql`
       CREATE TABLE IF NOT EXISTS questions (
         id TEXT PRIMARY KEY,
         quiz_id TEXT REFERENCES quizzes(id) ON DELETE CASCADE NOT NULL,
         question TEXT NOT NULL,
         type TEXT NOT NULL DEFAULT 'multiple-choice',
-        options TEXT[],
+        options TEXT,
         correct_answer TEXT NOT NULL,
         explanation TEXT,
         difficulty TEXT NOT NULL,
@@ -69,9 +73,9 @@ async function setupDatabase() {
         created_at TIMESTAMP DEFAULT NOW()
       );
     `;
-    
     console.log('✅ Tabela questions criada/verificada');
     
+    // Criar tabela student_answers
     await sql`
       CREATE TABLE IF NOT EXISTS student_answers (
         id TEXT PRIMARY KEY,
@@ -84,9 +88,9 @@ async function setupDatabase() {
         created_at TIMESTAMP DEFAULT NOW()
       );
     `;
-    
     console.log('✅ Tabela student_answers criada/verificada');
     
+    // Criar tabela quiz_sessions
     await sql`
       CREATE TABLE IF NOT EXISTS quiz_sessions (
         id TEXT PRIMARY KEY,
@@ -100,9 +104,9 @@ async function setupDatabase() {
         started_at TIMESTAMP DEFAULT NOW()
       );
     `;
-    
     console.log('✅ Tabela quiz_sessions criada/verificada');
     
+    // Criar tabela video_processing
     await sql`
       CREATE TABLE IF NOT EXISTS video_processing (
         id TEXT PRIMARY KEY,
@@ -117,13 +121,12 @@ async function setupDatabase() {
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `;
-    
     console.log('✅ Tabela video_processing criada/verificada');
     
     console.log('🎉 Banco de dados configurado com sucesso!');
     
   } catch (error) {
-    console.error('❌ Erro ao configurar banco de dados:', error);
+    console.error('❌ Erro ao configurar banco:', error);
   } finally {
     await sql.end();
   }

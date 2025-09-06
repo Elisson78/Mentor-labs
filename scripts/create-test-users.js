@@ -1,14 +1,19 @@
 
 const { drizzle } = require('drizzle-orm/postgres-js');
 const postgres = require('postgres');
-const { profiles } = require('../apps/web/src/lib/schema');
 const { createId } = require('@paralleldrive/cuid2');
 
-// Configuração da conexão com PostgreSQL
-const connectionString = process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/mentorlabs';
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error('❌ DATABASE_URL não está configurado');
+  process.exit(1);
+}
 
 const sql = postgres(connectionString, {
   max: 20,
+  idle_timeout: 20,
+  connect_timeout: 60,
 });
 
 const db = drizzle(sql);
@@ -17,51 +22,62 @@ async function createTestUsers() {
   try {
     console.log('🔄 Criando usuários de teste...');
     
-    // Usuário Mentor
-    const mentor = await db.insert(profiles).values({
-      id: createId(),
-      email: 'mentor.teste@gmail.com',
-      name: 'Professor João Silva',
-      userType: 'mentor',
-      bio: 'Mentor experiente com 10 anos de experiência em liderança e desenvolvimento profissional.',
-      avatar: null
-    }).returning();
+    // Verificar se a tabela profiles existe
+    const tableExists = await sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'profiles'
+      );
+    `;
     
-    console.log('✅ Mentor criado:', mentor[0]);
+    if (!tableExists[0].exists) {
+      console.log('❌ Tabela profiles não existe. Execute setup-database.js primeiro');
+      return;
+    }
     
-    // Usuário Aluno 1
-    const aluno1 = await db.insert(profiles).values({
-      id: createId(),
-      email: 'aluno.teste@gmail.com',
-      name: 'Maria Santos',
-      userType: 'student',
-      bio: 'Estudante interessada em desenvolvimento pessoal e liderança.',
-      avatar: null
-    }).returning();
+    // Limpar usuários de teste existentes
+    await sql`DELETE FROM profiles WHERE email LIKE '%teste%'`;
+    console.log('🧹 Usuários de teste anteriores removidos');
     
-    console.log('✅ Aluno 1 criado:', aluno1[0]);
+    // Criar usuários de teste
+    const testUsers = [
+      {
+        id: createId(),
+        email: 'mentor.teste@gmail.com',
+        name: 'Professor João Silva',
+        user_type: 'mentor',
+        bio: 'Professor experiente em matemática e física'
+      },
+      {
+        id: createId(),
+        email: 'aluno.teste@gmail.com',
+        name: 'Maria Santos',
+        user_type: 'student',
+        bio: 'Estudante dedicada'
+      },
+      {
+        id: createId(),
+        email: 'aluno2.teste@gmail.com',
+        name: 'Carlos Oliveira',
+        user_type: 'student',
+        bio: 'Apaixonado por tecnologia'
+      }
+    ];
     
-    // Usuário Aluno 2
-    const aluno2 = await db.insert(profiles).values({
-      id: createId(),
-      email: 'aluno2.teste@gmail.com',
-      name: 'Carlos Oliveira',
-      userType: 'student',
-      bio: 'Profissional buscando aprimorar habilidades de comunicação.',
-      avatar: null
-    }).returning();
+    for (const user of testUsers) {
+      await sql`
+        INSERT INTO profiles (id, email, name, user_type, bio, created_at, updated_at)
+        VALUES (${user.id}, ${user.email}, ${user.name}, ${user.user_type}, ${user.bio}, NOW(), NOW())
+      `;
+      console.log(`✅ Usuário criado: ${user.name} (${user.email})`);
+    }
     
-    console.log('✅ Aluno 2 criado:', aluno2[0]);
+    console.log('🎉 Usuários de teste criados com sucesso!');
     
-    // Listar todos os usuários
-    const allUsers = await db.select().from(profiles);
-    
-    console.log('\n📋 Todos os usuários no banco:');
-    allUsers.forEach(user => {
-      console.log(`- ${user.name} (${user.email}) - Tipo: ${user.userType}`);
-    });
-    
-    console.log('\n🎉 Usuários de teste criados com sucesso!');
+    // Verificar se foram criados
+    const createdUsers = await sql`SELECT * FROM profiles WHERE email LIKE '%teste%'`;
+    console.log(`📊 Total de usuários de teste: ${createdUsers.length}`);
     
   } catch (error) {
     console.error('❌ Erro ao criar usuários:', error);

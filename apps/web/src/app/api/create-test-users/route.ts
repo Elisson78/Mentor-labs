@@ -1,102 +1,103 @@
 
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { profiles } from '@/lib/schema';
+import postgres from 'postgres';
 import { createId } from '@paralleldrive/cuid2';
+
+const connectionString = process.env.DATABASE_URL!;
+const sql = postgres(connectionString);
 
 export async function POST() {
   try {
     console.log('🔄 Criando usuários de teste via API...');
     
-    // Verificar se já existem usuários de teste
-    const existingUsers = await db.select().from(profiles);
-    const testEmails = ['mentor.teste@gmail.com', 'aluno.teste@gmail.com', 'aluno2.teste@gmail.com'];
+    // Verificar se a tabela existe
+    const tableExists = await sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'profiles'
+      );
+    `;
     
-    const existingTestUsers = existingUsers.filter(user => 
-      testEmails.includes(user.email)
-    );
-    
-    if (existingTestUsers.length > 0) {
+    if (!tableExists[0].exists) {
       return NextResponse.json({
         success: false,
-        message: 'Usuários de teste já existem',
-        existingUsers: existingTestUsers
-      });
+        error: 'Tabela profiles não existe. Execute setup-database.js primeiro'
+      }, { status: 400 });
     }
     
+    // Limpar usuários de teste existentes
+    await sql`DELETE FROM profiles WHERE email LIKE '%teste%'`;
+    
     // Criar usuários de teste
-    const testUsers = [];
+    const testUsers = [
+      {
+        id: createId(),
+        email: 'mentor.teste@gmail.com',
+        name: 'Professor João Silva',
+        user_type: 'mentor',
+        bio: 'Professor experiente em matemática e física'
+      },
+      {
+        id: createId(),
+        email: 'aluno.teste@gmail.com',
+        name: 'Maria Santos',
+        user_type: 'student',
+        bio: 'Estudante dedicada'
+      },
+      {
+        id: createId(),
+        email: 'aluno2.teste@gmail.com',
+        name: 'Carlos Oliveira',
+        user_type: 'student',
+        bio: 'Apaixonado por tecnologia'
+      }
+    ];
     
-    // Usuário Mentor
-    const mentor = await db.insert(profiles).values({
-      id: createId(),
-      email: 'mentor.teste@gmail.com',
-      name: 'Professor João Silva',
-      userType: 'mentor',
-      bio: 'Mentor experiente com 10 anos de experiência em liderança e desenvolvimento profissional.',
-      avatar: null
-    }).returning();
+    const createdUsers = [];
+    for (const user of testUsers) {
+      const result = await sql`
+        INSERT INTO profiles (id, email, name, user_type, bio, created_at, updated_at)
+        VALUES (${user.id}, ${user.email}, ${user.name}, ${user.user_type}, ${user.bio}, NOW(), NOW())
+        RETURNING *
+      `;
+      createdUsers.push(result[0]);
+    }
     
-    testUsers.push(mentor[0]);
-    
-    // Usuário Aluno 1
-    const aluno1 = await db.insert(profiles).values({
-      id: createId(),
-      email: 'aluno.teste@gmail.com',
-      name: 'Maria Santos',
-      userType: 'student',
-      bio: 'Estudante interessada em desenvolvimento pessoal e liderança.',
-      avatar: null
-    }).returning();
-    
-    testUsers.push(aluno1[0]);
-    
-    // Usuário Aluno 2
-    const aluno2 = await db.insert(profiles).values({
-      id: createId(),
-      email: 'aluno2.teste@gmail.com',
-      name: 'Carlos Oliveira',
-      userType: 'student',
-      bio: 'Profissional buscando aprimorar habilidades de comunicação.',
-      avatar: null
-    }).returning();
-    
-    testUsers.push(aluno2[0]);
-    
-    console.log('✅ Usuários de teste criados:', testUsers);
+    await sql.end();
     
     return NextResponse.json({
       success: true,
-      message: 'Usuários de teste criados com sucesso!',
-      users: testUsers
+      message: 'Usuários de teste criados com sucesso',
+      users: createdUsers
     });
     
   } catch (error) {
     console.error('❌ Erro ao criar usuários de teste:', error);
+    await sql.end();
+    
     return NextResponse.json({
       success: false,
-      error: 'Erro ao criar usuários: ' + (error as Error).message
+      error: `Erro ao criar usuários: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
     }, { status: 500 });
   }
 }
 
 export async function GET() {
   try {
-    // Listar todos os usuários
-    const allUsers = await db.select().from(profiles);
+    const allUsers = await sql`SELECT * FROM profiles WHERE email LIKE '%teste%'`;
+    await sql.end();
     
     return NextResponse.json({
       success: true,
-      message: 'Lista de todos os usuários',
-      users: allUsers,
-      count: allUsers.length
+      users: allUsers
     });
     
   } catch (error) {
-    console.error('❌ Erro ao buscar usuários:', error);
+    await sql.end();
     return NextResponse.json({
       success: false,
-      error: 'Erro ao buscar usuários: ' + (error as Error).message
+      error: error instanceof Error ? error.message : 'Erro desconhecido'
     }, { status: 500 });
   }
 }
