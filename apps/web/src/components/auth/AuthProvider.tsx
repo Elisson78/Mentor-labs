@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { getCurrentUser, setCurrentUser, clearCurrentUser, login as authLogin, register as authRegister } from '@/lib/auth'
+import { getCurrentUser, login as authLogin, register as authRegister, logout as authLogout } from '@/lib/auth'
 
 // Usando sistema de auth personalizado para Replit
 
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = () => {
-    clearCurrentUser()
+    authLogout()
     setUser(null)
   }
 

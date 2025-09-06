@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Crown, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { toast } from "sonner";
+import { createTestUsers } from "@/lib/auth";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -20,6 +21,12 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
+
+  // Criar usuários de teste automaticamente
+  const initializeTestUsers = () => {
+    createTestUsers();
+    toast.success("Usuários de teste criados! Use: mentor1@gmail.com ou aluno1@gmail.com");
+  };
 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,6 +160,16 @@ export default function LoginPage() {
                   disabled={isLoading}
                 >
                   {isLoading ? "Entrando..." : "Entrar"}
+                </Button>
+
+                {/* Botão para criar usuários de teste */}
+                <Button 
+                  type="button" 
+                  onClick={initializeTestUsers}
+                  className="w-full h-11 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  disabled={isLoading}
+                >
+                  🔧 Criar Usuários de Teste
                 </Button>
               </form>
             </CardContent>

@@ -1,16 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { profiles } from '@/lib/schema';
-import { eq } from 'drizzle-orm';
+import postgres from 'postgres';
 import { createId } from '@paralleldrive/cuid2';
+
+// Usar conexão direta ao PostgreSQL (contorna problema do Drizzle)
+const connectionString = process.env.DATABASE_URL!;
+const sql = postgres(connectionString, {
+  max: 1,
+  idle_timeout: 20,
+  connect_timeout: 60,
+  prepare: false,
+});
 
 export async function POST(req: Request) {
   try {
     const { action, email, password, name, userType } = await req.json();
 
     if (action === 'login') {
-      // Buscar usuário por email
-      const users = await db.select().from(profiles).where(eq(profiles.email, email));
+      // Buscar usuário por email usando SQL direto
+      const users = await sql`
+        SELECT * FROM profiles WHERE email = ${email}
+      `;
 
       if (users.length > 0) {
         const user = users[0];
@@ -36,33 +45,29 @@ export async function POST(req: Request) {
     }
 
     if (action === 'register') {
-      // Verificar se usuário já existe
-      const existingUsers = await db.select().from(profiles).where(eq(profiles.email, email));
+      // Verificar se usuário já existe usando SQL direto
+      const existingUsers = await sql`
+        SELECT * FROM profiles WHERE email = ${email}
+      `;
 
       if (existingUsers.length > 0) {
         return NextResponse.json({ error: 'Email já cadastrado' }, { status: 400 });
       }
 
-      // Criar novo usuário
-      const newUser = {
-        id: createId(),
-        email,
-        name,
-        user_type: userType,
-        password: password, // Armazenar senha (em produção, usar hash)
-        created_at: new Date(),
-        updated_at: new Date()
-      };
-
-      await db.insert(profiles).values(newUser);
+      // Criar novo usuário usando SQL direto
+      const newUserId = createId();
+      await sql`
+        INSERT INTO profiles (id, email, name, user_type, password, created_at, updated_at)
+        VALUES (${newUserId}, ${email}, ${name}, ${userType}, ${password}, NOW(), NOW())
+      `;
 
       return NextResponse.json({
-        id: newUser.id,
-        email: newUser.email,
-        name: newUser.name,
-        userType: newUser.user_type,
-        createdAt: newUser.created_at,
-        updatedAt: newUser.updated_at
+        id: newUserId,
+        email,
+        name,
+        userType,
+        createdAt: new Date(),
+        updatedAt: new Date()
       });
     }
 
