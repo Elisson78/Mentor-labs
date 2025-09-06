@@ -38,37 +38,26 @@ const setCurrentUser = (user: User | null) => {
     localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
     
     // Salvar no cookie para o middleware
-    document.cookie = `replit_current_user=${JSON.stringify(user)}; path=/; max-age=86400`; // 24 horas
-    console.log('🍪 Cookie de autenticação criado:', user.userType);
+    document.cookie = `replit_current_user=${JSON.stringify(user)}; path=/; max-age=86400`;
   } else {
     // Remover localStorage e cookie
     localStorage.removeItem(CURRENT_USER_KEY);
     document.cookie = 'replit_current_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    console.log('🗑️ Cookie de autenticação removido');
   }
 };
 
 export const login = async (email: string, password: string): Promise<User | null> => {
-  console.log('🔍 Tentando login para:', email);
-  
   if (email && password) {
     const users = getUsers();
-    console.log('👥 Usuários disponíveis:', users);
     
     // Procurar usuário existente pelo email
     const existingUser = Object.values(users).find(user => user.email === email);
-    console.log('🔍 Usuário encontrado:', existingUser);
     
     if (existingUser) {
       setCurrentUser(existingUser);
-      console.log('✅ Login bem-sucedido, usuário logado:', existingUser);
       return existingUser;
-    } else {
-      console.log('❌ Usuário não encontrado');
-      return null;
     }
   }
-  console.log('❌ Email ou senha vazios');
   return null;
 };
 
@@ -94,7 +83,6 @@ export const register = async (email: string, password: string, name: string, us
       userType
     };
     
-    console.log('Registrando usuário:', user);
     
     // Salvar no "banco de dados"
     users[user.id] = user;

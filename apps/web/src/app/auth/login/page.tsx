@@ -18,47 +18,9 @@ export default function LoginPage() {
     password: ""
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [isFixed, setIsFixed] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
 
-  // Função para corrigir os dados automaticamente
-  const fixAuthData = () => {
-    if (typeof window === 'undefined') return;
-    
-    // Limpar dados antigos
-    localStorage.clear();
-    
-    // Criar usuários corretos
-    const usuarios = {
-      'mentor_1': {
-        id: 'mentor_1',
-        email: 'mentor1@gmail.com',
-        name: 'Professor Mentor',
-        userType: 'mentor'
-      },
-      'student_1': {
-        id: 'student_1', 
-        email: 'aluno1@gmail.com',
-        name: 'Estudante',
-        userType: 'student'
-      }
-    };
-    
-    localStorage.setItem('replit_users', JSON.stringify(usuarios));
-    
-    // Limpar qualquer cookie antigo
-    document.cookie = 'replit_current_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    
-    console.log('✅ SISTEMA CORRIGIDO!');
-    console.log('🔑 Credenciais para testar:');
-    console.log('MENTOR: mentor1@gmail.com (qualquer senha)');
-    console.log('ALUNO: aluno1@gmail.com (qualquer senha)');
-    console.log('🍪 Cookies limpos para novo login');
-    
-    setIsFixed(true);
-    toast.success("Sistema corrigido! Use: mentor1@gmail.com ou aluno1@gmail.com");
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -70,47 +32,21 @@ export default function LoginPage() {
     setIsLoading(true);
     
     try {
-      console.log('🚀 Iniciando processo de login...');
       const user = await login(formData.email, formData.password);
       
       if (user) {
-        console.log("✅ Login realizado com sucesso:", user);
-        console.log("🔍 Tipo de usuário encontrado:", user.userType);
-        toast.success(`Login realizado! Tipo: ${user.userType}`);
+        toast.success("Login realizado com sucesso!");
         
-        // Redirecionar imediatamente baseado no tipo de usuário
-        console.log('🏃‍♂️ Iniciando redirecionamento...');
+        // Redirecionar baseado no tipo de usuário
         const targetUrl = user.userType === 'mentor' ? '/dashboard' : '/aluno_dashboard';
-        console.log(`📍 Redirecionando ${user.userType.toUpperCase()} para ${targetUrl}`);
+        router.push(targetUrl);
         
-        // Múltiplas tentativas de redirecionamento
-        try {
-          // Método 1: Next.js router
-          router.push(targetUrl);
-          console.log('✅ Router.push executado');
-          
-          // Método 2: window.location (backup)
-          setTimeout(() => {
-            window.location.href = targetUrl;
-            console.log('✅ Window.location.href executado');
-          }, 500);
-          
-          // Método 3: replace (último recurso)
-          setTimeout(() => {
-            window.location.replace(targetUrl);
-            console.log('✅ Window.location.replace executado');
-          }, 1000);
-          
-        } catch (error) {
-          console.error('❌ Erro no redirecionamento:', error);
-        }
       } else {
-        console.log('❌ Login falhou - usuário não encontrado');
         toast.error("Email ou senha inválidos");
       }
     } catch (error) {
       toast.error("Erro ao fazer login");
-      console.error('❌ Erro no login:', error);
+      console.error('Erro no login:', error);
     } finally {
       setIsLoading(false);
     }
@@ -217,16 +153,6 @@ export default function LoginPage() {
                   disabled={isLoading}
                 >
                   {isLoading ? "Entrando..." : "Entrar"}
-                </Button>
-
-                {/* Botão para corrigir sistema */}
-                <Button 
-                  type="button" 
-                  onClick={fixAuthData}
-                  className="w-full h-11 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                  disabled={isLoading}
-                >
-                  🔧 Corrigir Sistema de Login
                 </Button>
               </form>
             </CardContent>
