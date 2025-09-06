@@ -38,12 +38,14 @@ export default function AuthProvider({
   useEffect(() => {
     // Check if user is already logged in
     const currentUser = getCurrentUser()
+    console.log('AuthProvider: Checking current user:', currentUser)
     setUser(currentUser)
     setLoading(false)
   }, [])
 
   const login = async (email: string, password: string) => {
     const user = await authLogin(email, password)
+    console.log('AuthProvider: Login result:', user)
     setUser(user)
     return user
   }

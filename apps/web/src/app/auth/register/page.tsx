@@ -75,14 +75,17 @@ export default function RegisterPage() {
       if (user) {
         toast.success("Conta criada com sucesso!");
         
-        // Redirecionar baseado no tipo de usuário
-        if (user.userType === 'mentor') {
-          router.push('/dashboard');
-        } else {
-          router.push('/aluno_dashboard');
-        }
+        // Aguardar um pouco para o usuário ver a mensagem
+        setTimeout(() => {
+          // Redirecionar baseado no tipo de usuário
+          if (user.userType === 'mentor') {
+            router.push('/dashboard');
+          } else {
+            router.push('/aluno_dashboard');
+          }
+        }, 1500);
       } else {
-        toast.error("Erro ao criar conta");
+        toast.error("Este email já está cadastrado. Tente fazer login.");
       }
     } catch (error) {
       toast.error("Erro ao criar conta");
