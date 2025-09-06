@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
@@ -64,10 +63,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const userData = await response.json()
       console.log('AuthProvider: Login result:', userData)
-      
+
       // Salvar no localStorage
       localStorage.setItem('replit_current_user', JSON.stringify(userData))
-      
+
       setUser(userData)
       return userData
     } catch (error) {
@@ -93,10 +92,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const userData = await response.json()
       console.log('Registrando usuário:', userData)
-      
+
       // Salvar no localStorage
       localStorage.setItem('replit_current_user', JSON.stringify(userData))
-      
+
       setUser(userData)
       return userData
     } catch (error) {
