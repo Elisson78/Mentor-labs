@@ -1,8 +1,9 @@
-
 'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { getCurrentUser, setCurrentUser, clearCurrentUser, login as authLogin, register as authRegister } from '@/lib/auth'
+
+// Usando sistema de auth personalizado para Replit
 
 export interface User {
   id: string
