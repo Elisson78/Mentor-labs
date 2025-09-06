@@ -51,18 +51,8 @@ export const login = async (email: string, password: string): Promise<User | nul
       setCurrentUser(existingUser);
       return existingUser;
     } else {
-      // Se não encontrar, criar um usuário padrão para teste
-      const user: User = {
-        id: 'user_' + Date.now(),
-        email,
-        name: email.split('@')[0],
-        userType: 'student'
-      };
-      
-      users[user.id] = user;
-      saveUsers(users);
-      setCurrentUser(user);
-      return user;
+      // Se não encontrar usuário, retornar null (forçar novo cadastro)
+      return null;
     }
   }
   return null;
@@ -108,4 +98,27 @@ export const clearAllData = () => {
   localStorage.removeItem(USERS_KEY);
   localStorage.removeItem(CURRENT_USER_KEY);
   console.log('Todos os dados de autenticação foram limpos');
+};
+
+// Função para criar usuários de teste corretos
+export const createTestUsers = () => {
+  if (typeof window === 'undefined') return;
+  
+  const testUsers = {
+    'mentor_1': {
+      id: 'mentor_1',
+      email: 'mentor@gmail.com',
+      name: 'mentor',
+      userType: 'mentor' as const
+    },
+    'student_1': {
+      id: 'student_1', 
+      email: 'aluno@gmail.com',
+      name: 'aluno',
+      userType: 'student' as const
+    }
+  };
+  
+  localStorage.setItem(USERS_KEY, JSON.stringify(testUsers));
+  console.log('Usuários de teste criados:', testUsers);
 };
