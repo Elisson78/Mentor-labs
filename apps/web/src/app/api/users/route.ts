@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
       if (existingUser.length > 0) {
         console.log('⚠️ Usuário já existe:', existingUser[0]);
-        return NextResponse.json({ 
+        return NextResponse.json({
           success: true,
           user: existingUser[0],
           message: 'Usuário já existe'
@@ -51,8 +51,8 @@ export async function POST(req: Request) {
 
       console.log('✅ Usuário criado no banco:', newUser[0]);
 
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         user: newUser[0],
         message: 'Usuário criado com sucesso'
       });
@@ -63,8 +63,8 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error('❌ Erro ao criar usuário:', error);
-    return NextResponse.json({ 
-      error: 'Erro interno do servidor: ' + (error as Error).message 
+    return NextResponse.json({
+      error: 'Erro interno do servidor: ' + (error as Error).message
     }, { status: 500 });
   }
 }
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
         .where(eq(profiles.email, email))
         .limit(1);
 
-      return NextResponse.json({ 
+      return NextResponse.json({
         success: true,
         user: user[0] || null
       });
@@ -91,17 +91,17 @@ export async function GET(request: NextRequest) {
     // Buscar todos os usuários
     const users = await db.select().from(profiles);
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: 'Usuários do banco PostgreSQL',
       users: users
     });
 
   } catch (error) {
     console.error('❌ Erro ao buscar usuários:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Erro ao buscar usuários: ' + (error as Error).message 
+    return NextResponse.json({
+      success: false,
+      error: 'Erro ao buscar usuários: ' + (error as Error).message
     }, { status: 500 });
   }
 }
