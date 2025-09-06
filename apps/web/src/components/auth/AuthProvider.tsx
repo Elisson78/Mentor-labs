@@ -1,85 +1,80 @@
-'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { getCurrentUser, setCurrentUser, clearCurrentUser, login, register, logout, type User } from '@/lib/auth';
+'use client'
 
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<User | null>;
-  register: (email: string, password: string, name: string, userType: 'mentor' | 'student') => Promise<User | null>;
-  logout: () => void;
+import React, { createContext, useContext, useEffect, useState } from 'react'
+import { getCurrentUser, setCurrentUser, clearCurrentUser, login as authLogin, register as authRegister } from '@/lib/auth'
+
+export interface User {
+  id: string
+  email: string
+  name: string
+  userType: 'mentor' | 'student' | 'admin'
+  avatar?: string
+  bio?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+interface AuthContextType {
+  user: User | null
+  loading: boolean
+  login: (email: string, password: string) => Promise<User | null>
+  register: (email: string, password: string, name: string, userType: 'mentor' | 'student') => Promise<User | null>
+  logout: () => void
+}
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Verificar se há usuário logado
-    const currentUser = getCurrentUser();
-    console.log('AuthProvider: Checking current user:', currentUser);
-    setUser(currentUser);
-    setLoading(false);
-  }, []);
+    const currentUser = getCurrentUser()
+    console.log('AuthProvider: Checking current user:', currentUser)
+    setUser(currentUser)
+    setLoading(false)
+  }, [])
 
-  const handleLogin = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User | null> => {
     try {
-      const result = await login(email, password);
-      console.log('AuthProvider: Login result:', result);
-      if (result) {
-        setUser(result);
-        return result;
-      }
-      return null;
+      const loggedUser = await authLogin(email, password)
+      console.log('AuthProvider: Login result:', loggedUser)
+      setUser(loggedUser)
+      return loggedUser
     } catch (error) {
-      console.error('Erro no login:', error);
-      return null;
+      console.error('AuthProvider: Login error:', error)
+      return null
     }
-  };
+  }
 
-  const handleRegister = async (email: string, password: string, name: string, userType: 'mentor' | 'student') => {
+  const register = async (email: string, password: string, name: string, userType: 'mentor' | 'student'): Promise<User | null> => {
     try {
-      const result = await register(email, password, name, userType);
-      if (result) {
-        setUser(result);
-        return result;
-      }
-      return null;
+      const registeredUser = await authRegister(email, password, name, userType)
+      setUser(registeredUser)
+      return registeredUser
     } catch (error) {
-      console.error('Erro no registro:', error);
-      return null;
+      console.error('AuthProvider: Register error:', error)
+      return null
     }
-  };
+  }
 
-  const handleLogout = () => {
-    logout();
-    setUser(null);
-  };
+  const logout = () => {
+    clearCurrentUser()
+    setUser(null)
+  }
 
   return (
-    <AuthContext.Provider 
-      value={{
-        user,
-        loading,
-        login: handleLogin,
-        register: handleRegister,
-        logout: handleLogout
-      }}
-    >
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
-  );
-};
+  )
+}
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
+export function useAuth() {
+  const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider')
   }
-  return context;
-};
-
-export default AuthProvider;
+  return context
+}

@@ -1,11 +1,11 @@
 
-'use client';
+'use client'
 
-import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from '@/components/ui/sonner';
-import { AuthProvider } from './auth/AuthProvider';
+import { Toaster } from "@/components/ui/sonner"
+import { AuthProvider } from "@/components/auth/AuthProvider"
+import { ThemeProvider } from "@/components/theme-provider"
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider
       attribute="class"
@@ -18,7 +18,5 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <Toaster />
       </AuthProvider>
     </ThemeProvider>
-  );
+  )
 }
-
-export { Providers };

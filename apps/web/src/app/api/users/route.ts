@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { profiles } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
-import { createId } from '@cuid/cuid2';
+import { createId } from '@paralleldrive/cuid2';
 
 export async function POST(req: Request) {
   try {
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       } else {
         return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
       }
-    } 
+    }
 
     if (action === 'register') {
       // Verificar se usuário já existe
