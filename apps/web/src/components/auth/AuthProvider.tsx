@@ -1,7 +1,9 @@
+
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { getCurrentUser, login as authLogin, logout as authLogout } from '@/lib/auth'
+import { useRouter } from 'next/navigation'
 
 interface User {
   id: string;
@@ -34,6 +36,7 @@ export default function AuthProvider({
 }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     // Check if user is already logged in
@@ -47,12 +50,24 @@ export default function AuthProvider({
     const user = await authLogin(email, password)
     console.log('AuthProvider: Login result:', user)
     setUser(user)
+    
+    // Redirecionamento automático após login
+    if (user) {
+      console.log('Redirecionando usuário:', user.userType)
+      if (user.userType === 'mentor') {
+        router.push('/dashboard')
+      } else if (user.userType === 'student') {
+        router.push('/aluno_dashboard')
+      }
+    }
+    
     return user
   }
 
   const signOut = () => {
     authLogout()
     setUser(null)
+    router.push('/')
   }
 
   return (

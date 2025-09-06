@@ -83,11 +83,31 @@ export const register = async (email: string, password: string, name: string, us
       userType
     };
     
+    console.log('Registrando usuário:', user);
     
-    // Salvar no "banco de dados"
+    // Salvar no localStorage (cache local)
     users[user.id] = user;
     saveUsers(users);
     setCurrentUser(user);
+    
+    // Salvar no banco de dados PostgreSQL
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(user),
+      });
+      
+      if (response.ok) {
+        console.log('✅ Usuário salvo no banco de dados');
+      } else {
+        console.error('❌ Erro ao salvar no banco de dados');
+      }
+    } catch (error) {
+      console.error('❌ Erro de rede ao salvar usuário:', error);
+    }
     
     return user;
   }

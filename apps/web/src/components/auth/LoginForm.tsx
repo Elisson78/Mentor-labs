@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from './AuthProvider'
+import { toast } from 'sonner'
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
@@ -24,7 +25,12 @@ export default function LoginForm() {
     try {
       const user = await login(email, password)
       if (user) {
-        router.push('/dashboard')
+        toast.success('Login realizado com sucesso!')
+        console.log('✅ Login realizado com sucesso:', email)
+        console.log('Redirecionando usuário:', user.userType)
+
+        // O redirecionamento agora é feito automaticamente no AuthProvider
+        // Não precisamos fazer aqui para evitar conflitos
       } else {
         setError('Email ou senha inválidos')
       }
