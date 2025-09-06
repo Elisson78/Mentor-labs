@@ -1,74 +1,93 @@
-# teste
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Next, TRPC, and more.
+# 🎓 Mentor Labs - Plataforma de Mentorias com IA
 
-## Features
+Plataforma educacional gamificada que conecta mentores e alunos, com geração automática de quizzes através de IA e análise de vídeos.
 
-- **TypeScript** - For type safety and improved developer experience
-- **Next.js** - Full-stack React framework
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **shadcn/ui** - Reusable UI components
-- **Next.js** - Full-stack React framework
-- **tRPC** - End-to-end type-safe APIs
-- **Node.js** - Runtime environment
-- **Drizzle** - TypeScript-first ORM
-- **SQLite/Turso** - Database engine
-- **Turborepo** - Optimized monorepo build system
+## 🚀 Tecnologias
 
-## Getting Started
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, tRPC
+- **Database**: PostgreSQL (Replit Database)
+- **ORM**: Drizzle ORM
+- **IA**: OpenAI/OpenRouter
+- **Autenticação**: Sistema personalizado para Replit
 
-First, install the dependencies:
+## 📋 Configuração no Replit
 
+### 1. Configure o PostgreSQL Database
+1. No Replit, vá para a aba "Database" 
+2. Clique em "Create a database"
+3. O `DATABASE_URL` será configurado automaticamente
+
+### 2. Configure as Variáveis de Ambiente
+Copie `.env.example` para `.env` e configure:
+
+```bash
+# OpenAI/OpenRouter (obrigatório para funcionalidades de IA)
+OPENAI_API_KEY=sua_chave_aqui
+OPENAI_BASE_URL=https://openrouter.ai/api/v1
+
+# URLs (ajuste com sua URL do Repl)
+NEXT_PUBLIC_API_URL=https://seu-repl.replit.dev
+NEXT_PUBLIC_WEB_URL=https://seu-repl.replit.dev
+```
+
+### 3. Instale Dependências
 ```bash
 npm install
 ```
- 
-Note: Before deploying, create a `.env` file or configure environment variables in your deployment platform (Coolify) using `.env.example`.
-## Database Setup
 
-This project uses SQLite with Drizzle ORM.
-
-1. Start the local SQLite database:
+### 4. Configure o Banco de Dados
 ```bash
-cd apps/server && npm run db:local
+node scripts/setup-database.js
 ```
 
-
-2. Update your `.env` file in the `apps/server` directory with the appropriate connection details if needed.
-
-3. Apply the schema to your database:
-```bash
-npm run db:push
-```
-
-
-Then, run the development server:
-
+### 5. Execute o Projeto
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
-The API is running at [http://localhost:3000](http://localhost:3000).
+## 🎮 Funcionalidades
 
+### Para Mentores:
+- ✅ Dashboard personalizado
+- ✅ Criação de quizzes com IA
+- ✅ Análise automática de vídeos
+- ✅ Gestão de alunos
+- ✅ Mentorias com IA
 
+### Para Alunos:
+- ✅ Dashboard gamificado
+- ✅ Mapa de progresso interativo
+- ✅ Quizzes gamificados
+- ✅ Sistema de conquistas
+- ✅ Trilhas de aprendizado
 
-## Project Structure
+## 🎯 Como Usar
 
+1. **Registro**: Acesse `/auth/register` e crie sua conta
+2. **Login**: Entre em `/auth/login`
+3. **Dashboard**: Será redirecionado automaticamente baseado no seu tipo de usuário
+4. **Explore**: Todas as funcionalidades estão disponíveis nos menus laterais
+
+## 📱 Responsivo
+
+A aplicação está totalmente otimizada para mobile e desktop.
+
+## 🔧 Scripts Disponíveis
+
+```bash
+npm run dev          # Inicia ambiente de desenvolvimento
+npm run build        # Build para produção
+npm run dev:web      # Inicia apenas o frontend
+npm run dev:server   # Inicia apenas o backend
+npm run check-types  # Verifica tipos TypeScript
 ```
-teste/
-├── apps/
-│   ├── web/         # Frontend application (Next.js)
-│   └── server/      # Backend API (Next, TRPC)
-```
 
-## Available Scripts
+## 🌟 Deploy no Replit
 
-- `npm run dev`: Start all applications in development mode
-- `npm run build`: Build all applications
-- `npm run dev:web`: Start only the web application
-- `npm run dev:server`: Start only the server
-- `npm run check-types`: Check TypeScript types across all apps
-- `npm run db:push`: Push schema changes to database
-- `npm run db:studio`: Open database studio UI
-- `cd apps/server && npm run db:local`: Start the local SQLite database
+A aplicação está configurada para rodar nativamente no Replit. Basta clicar no botão "Run" após a configuração inicial.
+
+---
+
+**Desenvolvido para o Replit** 🚀

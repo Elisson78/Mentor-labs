@@ -1,10 +1,10 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-// Usar a URL do banco do Replit diretamente
-const connectionString = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_ysPaE1qfCOlh@ep-withered-wood-a2w8bx90.eu-central-1.aws.neon.tech/neondb?sslmode=require";
+// Usar apenas o PostgreSQL do Replit
+const connectionString = process.env.DATABASE_URL!;
 
-console.log('🔗 Conectando ao banco:', connectionString.substring(0, 50) + '...');
+console.log('🔗 Conectando ao banco Replit:', connectionString ? 'Configurado ✅' : 'Não configurado ❌');
 
 // Create the connection
 const client = postgres(connectionString, {
