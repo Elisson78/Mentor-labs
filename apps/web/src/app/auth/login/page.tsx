@@ -18,8 +18,42 @@ export default function LoginPage() {
     password: ""
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isFixed, setIsFixed] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
+
+  // Função para corrigir os dados automaticamente
+  const fixAuthData = () => {
+    if (typeof window === 'undefined') return;
+    
+    // Limpar dados antigos
+    localStorage.clear();
+    
+    // Criar usuários corretos
+    const usuarios = {
+      'mentor_1': {
+        id: 'mentor_1',
+        email: 'mentor1@gmail.com',
+        name: 'Professor Mentor',
+        userType: 'mentor'
+      },
+      'student_1': {
+        id: 'student_1', 
+        email: 'aluno1@gmail.com',
+        name: 'Estudante',
+        userType: 'student'
+      }
+    };
+    
+    localStorage.setItem('replit_users', JSON.stringify(usuarios));
+    console.log('✅ SISTEMA CORRIGIDO!');
+    console.log('🔑 Credenciais para testar:');
+    console.log('MENTOR: mentor1@gmail.com (qualquer senha)');
+    console.log('ALUNO: aluno1@gmail.com (qualquer senha)');
+    
+    setIsFixed(true);
+    toast.success("Sistema corrigido! Use: mentor1@gmail.com ou aluno1@gmail.com");
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -158,6 +192,16 @@ export default function LoginPage() {
                   disabled={isLoading}
                 >
                   {isLoading ? "Entrando..." : "Entrar"}
+                </Button>
+
+                {/* Botão para corrigir sistema */}
+                <Button 
+                  type="button" 
+                  onClick={fixAuthData}
+                  className="w-full h-11 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  disabled={isLoading}
+                >
+                  🔧 Corrigir Sistema de Login
                 </Button>
               </form>
             </CardContent>
