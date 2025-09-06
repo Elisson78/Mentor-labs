@@ -1,34 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createId } from '@paralleldrive/cuid2';
+import { db } from '@/lib/db';
+import { profiles } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 
-// Base de usuários existentes no sistema (simula banco PostgreSQL)
-const EXISTING_USERS = [
+// Base de usuários existentes no sistema (backup - será migrado para PostgreSQL)
+const FALLBACK_USERS = [
   {
     id: 'mentor-1',
     email: 'mentor.teste@gmail.com',
     name: 'Professor João Silva',
-    userType: 'mentor',
+    user_type: 'mentor',
     password: 'test123'
   },
   {
     id: 'student-1', 
     email: 'aluno.teste@gmail.com',
     name: 'Maria Santos',
-    userType: 'student',
+    user_type: 'student',
     password: 'test123'
   },
   {
     id: 'student-2',
     email: 'aluno2.teste@gmail.com', 
     name: 'Carlos Oliveira',
-    userType: 'student',
+    user_type: 'student',
     password: 'test123'
   },
   {
     id: 'student-3',
     email: 'isaac@gmail.com',
     name: 'Isaac',
-    userType: 'student', 
+    user_type: 'student', 
     password: 'test123'
   }
 ];
@@ -38,53 +41,85 @@ export async function POST(req: Request) {
     const { action, email, password, name, userType } = await req.json();
 
     if (action === 'login') {
-      // Buscar usuário na base existente
-      const user = EXISTING_USERS.find(u => u.email === email);
+      try {
+        // Buscar usuário no banco PostgreSQL
+        const [user] = await db.select()
+          .from(profiles)
+          .where(eq(profiles.email, email))
+          .limit(1);
 
-      if (!user) {
-        return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
+        if (!user) {
+          // Fallback: verificar na base de usuários de desenvolvimento
+          const fallbackUser = FALLBACK_USERS.find(u => u.email === email);
+          if (!fallbackUser) {
+            return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
+          }
+          
+          if (fallbackUser.password !== password) {
+            return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
+          }
+
+          // Retornar dados do usuário fallback
+          return NextResponse.json({
+            id: fallbackUser.id,
+            email: fallbackUser.email,
+            name: fallbackUser.name,
+            userType: fallbackUser.user_type
+          });
+        }
+
+        if (user.password !== password) {
+          return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
+        }
+
+        // Retornar dados do usuário do banco PostgreSQL (sem senha)
+        return NextResponse.json({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          userType: user.user_type
+        });
+      } catch (error) {
+        console.error('❌ Erro ao buscar usuário no PostgreSQL:', error);
+        return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
       }
-
-      if (user.password !== password) {
-        return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
-      }
-
-      // Retornar dados do usuário (sem senha)
-      return NextResponse.json({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        userType: user.userType
-      });
     }
 
     if (action === 'register') {
-      // Verificar se usuário já existe
-      const existingUser = EXISTING_USERS.find(u => u.email === email);
-      
-      if (existingUser) {
-        return NextResponse.json({ error: 'Email já cadastrado' }, { status: 400 });
+      try {
+        // Verificar se usuário já existe no PostgreSQL
+        const [existingUser] = await db.select()
+          .from(profiles)
+          .where(eq(profiles.email, email))
+          .limit(1);
+        
+        if (existingUser) {
+          return NextResponse.json({ error: 'Email já cadastrado' }, { status: 400 });
+        }
+
+        // Criar novo usuário no banco PostgreSQL
+        const [newUser] = await db.insert(profiles)
+          .values({
+            email,
+            name,
+            user_type: userType,
+            password
+          })
+          .returning();
+
+        console.log('✅ Usuário criado no PostgreSQL:', newUser.email);
+
+        // Retornar dados do usuário (sem senha)
+        return NextResponse.json({
+          id: newUser.id,
+          email: newUser.email,
+          name: newUser.name,
+          userType: newUser.user_type
+        });
+      } catch (error) {
+        console.error('❌ Erro ao criar usuário no PostgreSQL:', error);
+        return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
       }
-
-      // Criar novo usuário
-      const newUser = {
-        id: createId(),
-        email,
-        name,
-        userType,
-        password
-      };
-
-      // Em produção real, salvar no banco PostgreSQL
-      EXISTING_USERS.push(newUser);
-
-      // Retornar dados do usuário (sem senha)
-      return NextResponse.json({
-        id: newUser.id,
-        email: newUser.email,
-        name: newUser.name,
-        userType: newUser.userType
-      });
     }
 
     return NextResponse.json({ error: 'Ação não reconhecida' }, { status: 400 });
@@ -97,17 +132,19 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
-    // Retornar todos os usuários (sem senhas)
-    const users = EXISTING_USERS.map(user => ({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      userType: user.userType
-    }));
+    // Buscar todos os usuários do PostgreSQL
+    const users = await db.select({
+      id: profiles.id,
+      email: profiles.email,
+      name: profiles.name,
+      userType: profiles.user_type
+    }).from(profiles);
 
+    console.log(`📊 ${users.length} usuários encontrados no PostgreSQL`);
+    
     return NextResponse.json(users);
   } catch (error) {
-    console.error('Erro ao buscar usuários:', error);
+    console.error('❌ Erro ao buscar usuários no PostgreSQL:', error);
     return NextResponse.json({ error: 'Erro ao buscar usuários' }, { status: 500 });
   }
 }
