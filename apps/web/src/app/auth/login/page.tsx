@@ -65,27 +65,30 @@ export default function LoginPage() {
     setIsLoading(true);
     
     try {
+      console.log('🚀 Iniciando processo de login...');
       const user = await login(formData.email, formData.password);
       
       if (user) {
-        console.log("✅ Login realizado com sucesso:", user.email);
-        toast.success("Login realizado com sucesso!");
+        console.log("✅ Login realizado com sucesso:", user);
+        console.log("🔍 Tipo de usuário encontrado:", user.userType);
+        toast.success(`Login realizado! Tipo: ${user.userType}`);
         
-        // Aguardar um pouco e redirecionar baseado no tipo de usuário
-        setTimeout(() => {
-          console.log('Redirecionando usuário:', user.userType);
-          if (user.userType === 'mentor') {
-            router.push('/dashboard');
-          } else {
-            router.push('/aluno_dashboard');
-          }
-        }, 1000);
+        // Redirecionar imediatamente baseado no tipo de usuário
+        console.log('🏃‍♂️ Iniciando redirecionamento...');
+        if (user.userType === 'mentor') {
+          console.log('📍 Redirecionando MENTOR para /dashboard');
+          window.location.href = '/dashboard';
+        } else {
+          console.log('📍 Redirecionando ALUNO para /aluno_dashboard');  
+          window.location.href = '/aluno_dashboard';
+        }
       } else {
+        console.log('❌ Login falhou - usuário não encontrado');
         toast.error("Email ou senha inválidos");
       }
     } catch (error) {
       toast.error("Erro ao fazer login");
-      console.error('Erro no login:', error);
+      console.error('❌ Erro no login:', error);
     } finally {
       setIsLoading(false);
     }
