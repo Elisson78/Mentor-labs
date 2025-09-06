@@ -2,7 +2,59 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { profiles } from '@/lib/schema';
+import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { profiles } from '@/lib/schema';
 import { createId } from '@paralleldrive/cuid2';
+
+export async function POST() {
+  try {
+    console.log('🔄 Criando usuários de teste...');
+
+    // Dados dos usuários de teste
+    const testUsers = [
+      {
+        id: createId(),
+        email: 'mentor@gmail.com',
+        name: 'Carlos Oliveira',
+        userType: 'mentor' as const,
+        bio: 'Mentor experiente em desenvolvimento',
+        avatar: null
+      },
+      {
+        id: createId(),
+        email: 'aluno@gmail.com',
+        name: 'Maria Santos',
+        userType: 'student' as const,
+        bio: 'Estudante dedicada',
+        avatar: null
+      }
+    ];
+
+    // Inserir usuários no banco
+    for (const user of testUsers) {
+      try {
+        await db.insert(profiles).values(user);
+        console.log(`✅ Usuário criado: ${user.email} (${user.userType})`);
+      } catch (error) {
+        console.log(`⚠️ Usuário ${user.email} já existe ou erro:`, error);
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Usuários de teste criados com sucesso',
+      users: testUsers
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao criar usuários de teste:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Erro ao criar usuários de teste: ' + (error as Error).message
+    }, { status: 500 });
+  }
+}
 
 export async function POST() {
   try {

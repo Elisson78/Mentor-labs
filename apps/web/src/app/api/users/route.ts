@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { profiles } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
-import { createId } from '@paralleldrive/cuid-identity';
+import { createId } from '@paralleldrive/cuid2';
 
 export async function POST(req: Request) {
   try {
