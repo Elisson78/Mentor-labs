@@ -46,10 +46,15 @@ export default function LoginPage() {
     };
     
     localStorage.setItem('replit_users', JSON.stringify(usuarios));
+    
+    // Limpar qualquer cookie antigo
+    document.cookie = 'replit_current_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    
     console.log('✅ SISTEMA CORRIGIDO!');
     console.log('🔑 Credenciais para testar:');
     console.log('MENTOR: mentor1@gmail.com (qualquer senha)');
     console.log('ALUNO: aluno1@gmail.com (qualquer senha)');
+    console.log('🍪 Cookies limpos para novo login');
     
     setIsFixed(true);
     toast.success("Sistema corrigido! Use: mentor1@gmail.com ou aluno1@gmail.com");
@@ -75,12 +80,29 @@ export default function LoginPage() {
         
         // Redirecionar imediatamente baseado no tipo de usuário
         console.log('🏃‍♂️ Iniciando redirecionamento...');
-        if (user.userType === 'mentor') {
-          console.log('📍 Redirecionando MENTOR para /dashboard');
-          window.location.href = '/dashboard';
-        } else {
-          console.log('📍 Redirecionando ALUNO para /aluno_dashboard');  
-          window.location.href = '/aluno_dashboard';
+        const targetUrl = user.userType === 'mentor' ? '/dashboard' : '/aluno_dashboard';
+        console.log(`📍 Redirecionando ${user.userType.toUpperCase()} para ${targetUrl}`);
+        
+        // Múltiplas tentativas de redirecionamento
+        try {
+          // Método 1: Next.js router
+          router.push(targetUrl);
+          console.log('✅ Router.push executado');
+          
+          // Método 2: window.location (backup)
+          setTimeout(() => {
+            window.location.href = targetUrl;
+            console.log('✅ Window.location.href executado');
+          }, 500);
+          
+          // Método 3: replace (último recurso)
+          setTimeout(() => {
+            window.location.replace(targetUrl);
+            console.log('✅ Window.location.replace executado');
+          }, 1000);
+          
+        } catch (error) {
+          console.error('❌ Erro no redirecionamento:', error);
         }
       } else {
         console.log('❌ Login falhou - usuário não encontrado');

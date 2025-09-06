@@ -34,9 +34,17 @@ export const getCurrentUser = (): User | null => {
 const setCurrentUser = (user: User | null) => {
   if (typeof window === 'undefined') return;
   if (user) {
+    // Salvar no localStorage
     localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+    
+    // Salvar no cookie para o middleware
+    document.cookie = `replit_current_user=${JSON.stringify(user)}; path=/; max-age=86400`; // 24 horas
+    console.log('🍪 Cookie de autenticação criado:', user.userType);
   } else {
+    // Remover localStorage e cookie
     localStorage.removeItem(CURRENT_USER_KEY);
+    document.cookie = 'replit_current_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    console.log('🗑️ Cookie de autenticação removido');
   }
 };
 

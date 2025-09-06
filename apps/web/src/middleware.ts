@@ -16,17 +16,17 @@ export async function middleware(req: NextRequest) {
   
   if (isProtectedRoute) {
     try {
-      // Verificar token do Supabase no cookie
-      const token = req.cookies.get('sb-access-token')?.value || 
-                   req.cookies.get('supabase-auth-token')?.value
+      // Verificar cookie de autenticação (nossa implementação)
+      const authUser = req.cookies.get('replit_current_user')?.value
       
-      if (!token) {
-        // Redirecionar para login se não tiver token
+      if (!authUser) {
+        // Redirecionar para login se não tiver usuário autenticado
         return NextResponse.redirect(new URL('/auth/login', req.url))
       }
       
-      // Verificar se o usuário está tentando acessar rota errada baseada na role
-      const userRole = req.cookies.get('userRole')?.value || req.cookies.get('userType')?.value
+      // Parse do usuário e verificar role
+      const user = JSON.parse(authUser)
+      const userRole = user.userType
       
       if (userRole) {
         // Redirecionamentos baseados na role
