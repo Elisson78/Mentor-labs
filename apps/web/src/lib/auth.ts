@@ -157,9 +157,30 @@ export const register = async (email: string, password: string, name: string, us
   return newUser;
 };
 
-// Criar usuários de teste (para desenvolvimento)
+// Limpar dados de teste (para produção)
+export const clearTestData = () => {
+  if (typeof window === 'undefined') return;
+  
+  // Limpar localStorage
+  localStorage.removeItem('mentorlab-users');
+  localStorage.removeItem('mentorlab-current-user');
+  
+  // Limpar cookies
+  document.cookie = 'user-session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+  document.cookie = 'user-type=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+  
+  console.log('✅ Dados de teste limpos para produção');
+};
+
+// Criar usuários de teste (apenas para desenvolvimento)
 export const createTestUsers = () => {
   if (typeof window === 'undefined') return;
+  
+  // Não criar usuários de teste em produção
+  if (process.env.NODE_ENV === 'production') {
+    console.log('⚠️ Usuários de teste não criados em produção');
+    return;
+  }
   
   const testUsers = {
     'mentor_1': {
@@ -177,7 +198,7 @@ export const createTestUsers = () => {
   };
   
   saveLocalUsers(testUsers);
-  console.log('✅ Usuários de teste criados:', testUsers);
+  console.log('✅ Usuários de teste criados (desenvolvimento):', testUsers);
 };
 
 // Fazer logout

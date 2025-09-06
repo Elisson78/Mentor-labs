@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Crown, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { toast } from "sonner";
-import { createTestUsers } from "@/lib/auth";
+import { createTestUsers, clearTestData } from "@/lib/auth";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -26,6 +26,12 @@ export default function LoginPage() {
   const initializeTestUsers = () => {
     createTestUsers();
     toast.success("Usuários de teste criados! Use: mentor1@gmail.com ou aluno1@gmail.com");
+  };
+
+  // Limpar dados de teste (para produção)
+  const clearTestUsers = () => {
+    clearTestData();
+    toast.success("Dados de teste limpos! Sistema pronto para produção.");
   };
 
 
@@ -162,15 +168,26 @@ export default function LoginPage() {
                   {isLoading ? "Entrando..." : "Entrar"}
                 </Button>
 
-                {/* Botão para criar usuários de teste */}
-                <Button 
-                  type="button" 
-                  onClick={initializeTestUsers}
-                  className="w-full h-11 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                  disabled={isLoading}
-                >
-                  🔧 Criar Usuários de Teste
-                </Button>
+                {/* Botões de desenvolvimento/produção */}
+                <div className="space-y-2">
+                  <Button 
+                    type="button" 
+                    onClick={initializeTestUsers}
+                    className="w-full h-11 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                    disabled={isLoading}
+                  >
+                    🔧 Criar Usuários de Teste
+                  </Button>
+                  
+                  <Button 
+                    type="button" 
+                    onClick={clearTestUsers}
+                    className="w-full h-11 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700"
+                    disabled={isLoading}
+                  >
+                    🧹 Limpar Dados de Teste (Produção)
+                  </Button>
+                </div>
               </form>
             </CardContent>
             
