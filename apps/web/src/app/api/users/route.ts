@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import postgres from 'postgres';
 import { createId } from '@paralleldrive/cuid2';
 
-// Usar conexão direta ao PostgreSQL (contorna problema do Drizzle)
+// Usar conexão otimizada para Neon/Vercel
 const connectionString = process.env.DATABASE_URL!;
 const sql = postgres(connectionString, {
-  max: 1,
-  idle_timeout: 20,
-  connect_timeout: 60,
   prepare: false,
+  ssl: true,
+  idle_timeout: 20,
+  max_lifetime: 60 * 30,
 });
 
 export async function POST(req: Request) {

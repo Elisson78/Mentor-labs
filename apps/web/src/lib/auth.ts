@@ -64,19 +64,9 @@ export const clearCurrentUser = () => {
   setCurrentUser(null);
 };
 
-// Fazer login (usando sistema híbrido: localStorage + fallback para API)
+// Fazer login (prioriza banco de dados, fallback para localStorage)
 export const login = async (email: string, password: string): Promise<User | null> => {
-  // Primeiro tentar com usuários locais (para desenvolvimento e testes)
-  const localUsers = getLocalUsers();
-  const localUser = Object.values(localUsers).find(user => user.email === email);
-  
-  if (localUser) {
-    // Se encontrar usuário local, usar (para testes e desenvolvimento)
-    setCurrentUser(localUser);
-    return localUser;
-  }
-
-  // Fallback: tentar API do banco (se disponível)
+  // PRIMEIRA PRIORIDADE: Tentar API do banco de dados
   try {
     const response = await fetch('/api/users', {
       method: 'POST',
@@ -89,23 +79,66 @@ export const login = async (email: string, password: string): Promise<User | nul
     if (response.ok) {
       const user = await response.json();
       setCurrentUser(user);
+      
+      // Salvar também localmente para cache
+      const localUsers = getLocalUsers();
+      localUsers[user.id] = user;
+      saveLocalUsers(localUsers);
+      
+      console.log('✅ Login realizado via banco de dados');
       return user;
     }
   } catch (error) {
-    console.error('API de banco indisponível, usando apenas localStorage:', error);
+    console.log('⚠️ Banco indisponível, tentando localStorage...');
+  }
+
+  // FALLBACK: Tentar com usuários locais
+  const localUsers = getLocalUsers();
+  const localUser = Object.values(localUsers).find(user => user.email === email);
+  
+  if (localUser) {
+    setCurrentUser(localUser);
+    console.log('✅ Login realizado via localStorage');
+    return localUser;
   }
 
   return null;
 };
 
-// Fazer registro (sistema híbrido)
+// Fazer registro (prioriza banco de dados, fallback para localStorage)  
 export const register = async (email: string, password: string, name: string, userType: 'mentor' | 'student'): Promise<User | null> => {
-  // Primeiro tentar salvar localmente
+  // PRIMEIRA PRIORIDADE: Tentar registrar no banco de dados
+  try {
+    const response = await fetch('/api/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action: 'register', email, password, name, userType })
+    });
+
+    if (response.ok) {
+      const user = await response.json();
+      setCurrentUser(user);
+      
+      // Salvar também localmente para cache
+      const localUsers = getLocalUsers();
+      localUsers[user.id] = user;
+      saveLocalUsers(localUsers);
+      
+      console.log('✅ Usuário registrado via banco de dados');
+      return user;
+    }
+  } catch (error) {
+    console.log('⚠️ Banco indisponível para registro, usando localStorage...');
+  }
+
+  // FALLBACK: Verificar se usuário já existe localmente
   const localUsers = getLocalUsers();
   const existingUser = Object.values(localUsers).find(user => user.email === email);
   
   if (existingUser) {
-    return null; // Usuário já existe localmente
+    return null; // Usuário já existe
   }
 
   // Criar usuário localmente
@@ -119,20 +152,8 @@ export const register = async (email: string, password: string, name: string, us
   localUsers[newUser.id] = newUser;
   saveLocalUsers(localUsers);
   setCurrentUser(newUser);
-
-  // Tentar salvar no banco também (fallback)
-  try {
-    await fetch('/api/users', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ action: 'register', email, password, name, userType })
-    });
-  } catch (error) {
-    console.log('Usuário salvo apenas localmente (banco indisponível)');
-  }
-
+  
+  console.log('✅ Usuário registrado via localStorage');
   return newUser;
 };
 
